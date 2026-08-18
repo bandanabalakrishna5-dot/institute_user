@@ -14,6 +14,7 @@ import TimetablePage from '../../components/Timetable/TimetablePage';
 import StudentMarksPage from '../../components/StudentMarks/StudentMarksPage';
 import StudentFeeDetails from '../../components/FeeDetails/StudentFeeDetails';
 import NotificationsPage from '../../components/Notifications/NotificationsPage';
+import StudentBusTrackingPage from '../../components/Transport/StudentBusTrackingPage';
 import { ClassesPlaceholder, StudentsPlaceholder } from '../../components/Placeholder/index';
 import { USER_PORTAL_PERMISSIONS } from '../../services/commonUtills/FormValidations';
 
@@ -135,6 +136,14 @@ export const AppRouters = () => {
               userTypes={['STUDENT']}
             >
               <StudentLeavePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/bus-tracking"
+          element={
+            <ProtectedRoute userTypes={['STUDENT']}>
+              <StudentBusTrackingPage />
             </ProtectedRoute>
           }
         />

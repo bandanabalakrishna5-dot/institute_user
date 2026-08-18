@@ -48,9 +48,7 @@ function StudentDashboard({ user }) {
     hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.LEAVE) && {
       label: 'Leave Request', path: '/student-leave', icon: <FaClipboardCheck />, color: 'teal',
     },
-    hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.TRANSPORT) && {
-      label: 'Bus Tracking', icon: <FaBus />, color: 'cyan',
-    },
+    { label: 'Bus Tracking', path: '/bus-tracking', icon: <FaBus />, color: 'cyan' },
     hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.SCHOOL_CALENDAR) && {
       label: 'School Calendar', icon: <FaCalendarAlt />, color: 'blue',
     },
