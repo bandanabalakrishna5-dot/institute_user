@@ -1,8 +1,14 @@
 node_modules/
+build/
+dist/
+
+# Environment files
+.env
+.env.*
+!.env.example
 
 # Local build caches and logs
 .cache/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
