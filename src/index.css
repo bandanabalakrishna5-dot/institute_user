@@ -526,6 +526,7 @@ a {
 }
 
 .user-bottom-nav-item {
+  position: relative;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -558,14 +559,6 @@ a {
   height: 3px;
   border-radius: 0 0 4px 4px;
   background: #2f54eb;
-}
-
-.user-bottom-nav {
-  position: fixed;
-}
-
-.user-bottom-nav-item {
-  position: relative;
 }
 
 .user-bottom-nav-icon {
