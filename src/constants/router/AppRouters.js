@@ -7,6 +7,7 @@ import DashBoard from '../../components/Dashboard/dashboard';
 import Profile from '../../components/Profile/index';
 import StaffProfile from '../../components/StaffProfile/index';
 import HomeworkPage from '../../components/Homework/HomeworkPage';
+import HomeworkCompletePage from '../../components/HomeworkComplete/HomeworkCompletePage';
 import AttendanceRoute from '../../components/Attendance/AttendanceRoute';
 import StaffSelfAttendancePage from '../../components/Attendance/StaffSelfAttendancePage';
 import StaffLeavePage from '../../components/Leave/StaffLeavePage';
@@ -137,6 +138,17 @@ export const AppRouters = () => {
               userTypes={['STUDENT']}
             >
               <StudentLeavePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/verify-homework"
+          element={
+            <ProtectedRoute
+              permissionCodes={USER_PORTAL_PERMISSIONS.HOMEWORK_ACCESS}
+              userTypes={['STAFF']}
+            >
+              <HomeworkCompletePage />
             </ProtectedRoute>
           }
         />

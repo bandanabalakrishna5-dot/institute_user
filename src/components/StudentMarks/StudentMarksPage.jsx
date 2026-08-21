@@ -4,6 +4,8 @@ import { FaArrowLeft, FaClipboardCheck } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../App';
 import Layout from '../common/Layout';
+import SectionSelect from '../common/SectionSelect';
+import CustomSelect from '../common/CustomSelect';
 import {
   fetchBranchClasses,
   fetchClassSections,
@@ -162,9 +164,9 @@ function StudentMarksPage() {
           <section className="leave-form-card marks-form-card">
             <h2>Exam details</h2>
             <Form className="leave-form-grid">
-              <Form.Group><Form.Label>Class *</Form.Label><Form.Select value={classId} onChange={(event) => handleClassChange(event.target.value)}><option value="">Select class</option>{classes.map((item) => <option key={item.clsid} value={item.clsid}>{item.clsnm}</option>)}</Form.Select></Form.Group>
-              <Form.Group><Form.Label>Section *</Form.Label><Form.Select value={sectionId} disabled={!classId} onChange={(event) => handleSectionChange(event.target.value)}><option value="">Select section</option>{sections.map((item) => <option key={item.secid} value={item.secid}>{item.secnm}</option>)}</Form.Select></Form.Group>
-              <Form.Group className="leave-form-full"><Form.Label>Exam *</Form.Label><Form.Select value={examId} disabled={!sectionId || loading} onChange={(event) => handleExamChange(event.target.value)}><option value="">{loading ? 'Loading exams...' : 'Select exam'}</option>{exams.map((exam) => <option key={exam.fkexmtmble} value={exam.fkexmtmble}>{exam.exmtyp}</option>)}</Form.Select></Form.Group>
+              <Form.Group><Form.Label>Class *</Form.Label><CustomSelect options={classes.map((item) => ({ value: item.clsid, label: item.clsnm }))} value={classId} onChange={handleClassChange} placeholder="Select class" ariaLabel="Class" /></Form.Group>
+              <Form.Group><Form.Label>Section *</Form.Label><SectionSelect sections={sections} value={sectionId} disabled={!classId} onChange={handleSectionChange} /></Form.Group>
+              <Form.Group className="leave-form-full"><Form.Label>Exam *</Form.Label><CustomSelect options={exams.map((item) => ({ value: item.fkexmtmble, label: item.exmtyp }))} value={examId} disabled={!sectionId || loading} onChange={handleExamChange} placeholder={loading ? 'Loading exams...' : 'Select exam'} ariaLabel="Exam" /></Form.Group>
             </Form>
           </section>
 

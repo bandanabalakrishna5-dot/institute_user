@@ -27,14 +27,13 @@ import {
 function StudentDashboard({ user }) {
   const navigate = useNavigate();
   const cds = user.cds || '';
-  const canOpenTimetable = hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.TIMETABLE);
   const [todayClasses, setTodayClasses] = useState([]);
   const [classesLoading, setClassesLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
     const loadTodayClasses = async () => {
-      if (!canOpenTimetable || !user.instid || !user.brcid || !user.clsid || !user.secid || !user.acdmcyr) {
+      if (!user.instid || !user.brcid || !user.clsid || !user.secid || !user.acdmcyr) {
         setClassesLoading(false);
         return;
       }
@@ -55,7 +54,7 @@ function StudentDashboard({ user }) {
     };
     loadTodayClasses();
     return () => { active = false; };
-  }, [canOpenTimetable, user.acdmcyr, user.brcid, user.clsid, user.instid, user.secid]);
+  }, [user.acdmcyr, user.brcid, user.clsid, user.instid, user.secid]);
   const exploreItems = [
     hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.TIMETABLE) && {
       label: 'Today’s Timetable', icon: <FaChalkboardTeacher />, color: 'blue',

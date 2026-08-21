@@ -4,6 +4,8 @@ import { FaArrowLeft, FaCalendarCheck, FaSearch } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../App';
 import Layout from '../common/Layout';
+import SectionSelect from '../common/SectionSelect';
+import CustomSelect from '../common/CustomSelect';
 import {
   fetchStudentAttendance,
   updateStudentAttendance,
@@ -164,17 +166,11 @@ function AttendancePage() {
           <section className="attendance-filter-card">
             <Form.Group>
               <Form.Label>Class</Form.Label>
-              <Form.Select value={classId} onChange={handleClassChange}>
-                <option value="">Select class</option>
-                {classes.map((classItem) => <option key={classItem.clsid} value={classItem.clsid}>{classItem.clsnm}</option>)}
-              </Form.Select>
+              <CustomSelect options={classes.map((item) => ({ value: item.clsid, label: item.clsnm }))} value={classId} onChange={(value) => handleClassChange({ target: { value } })} placeholder="Select class" ariaLabel="Class" />
             </Form.Group>
             <Form.Group>
               <Form.Label>Section</Form.Label>
-              <Form.Select value={sectionId} onChange={handleSectionChange} disabled={!classId}>
-                <option value="">Select section</option>
-                {sections.map((section) => <option key={section.secid} value={section.secid}>{section.secnm}</option>)}
-              </Form.Select>
+              <SectionSelect sections={sections} value={sectionId} onChange={(value) => handleSectionChange({ target: { value } })} disabled={!classId} />
             </Form.Group>
             <button className="attendance-check" type="button" onClick={loadAttendance} disabled={loading || !classId || !sectionId}>
               {loading ? <Spinner as="span" animation="border" size="sm" /> : <FaSearch />} Check
@@ -195,14 +191,7 @@ function AttendancePage() {
                     <strong>{student.stdnm || `Student ${student.stdid}`}</strong>
                     <span>{[student.clsnm, student.secnm].filter(Boolean).join(' • ')}</span>
                   </div>
-                  <select
-                    value={statuses[student.stdid] || ''}
-                    onChange={(event) => setStatuses((current) => ({ ...current, [student.stdid]: event.target.value }))}
-                    aria-label={`Attendance for ${student.stdnm}`}
-                  >
-                    <option value="" disabled>Select attendance</option>
-                    {attendanceOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                  </select>
+                  <CustomSelect className="attendance-status-select" options={attendanceOptions} value={statuses[student.stdid] || ''} onChange={(value) => setStatuses((current) => ({ ...current, [student.stdid]: value }))} placeholder="Select attendance" allowEmpty={false} ariaLabel={`Attendance for ${student.stdnm}`} />
                 </article>
               ))}
             </div>

@@ -14,6 +14,7 @@ import {
   FaChevronLeft,
   FaUserCheck,
   FaCalendarAlt,
+  FaTasks,
 } from 'react-icons/fa';
 import {
   fetchStaffDailyTimetable,
@@ -114,6 +115,12 @@ function StaffDashboard({ user }) {
       path: '/homework',
       icon: <FaBookOpen />,
       color: 'violet',
+    },
+    hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.HOMEWORK_ACCESS) && {
+      label: 'Verify Homework',
+      path: '/verify-homework',
+      icon: <FaTasks />,
+      color: 'teal',
     },
     hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.ATTENDANCE) && {
       label: 'Student Attendance',

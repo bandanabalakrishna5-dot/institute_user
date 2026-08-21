@@ -9,6 +9,7 @@ import {
   fetchStudentLeaves,
 } from '../../services/LeaveServices/staffLeaveServices';
 import Layout from '../common/Layout';
+import CustomSelect from '../common/CustomSelect';
 
 const initialForm = { leaveTypeId: '', fromDate: '', toDate: '', description: '' };
 const defaultStudentLeaveTypes = [
@@ -126,7 +127,7 @@ function StudentLeavePage() {
             <section className="leave-form-card">
               <h2>New Leave Request</h2>
               <Form className="leave-form-grid">
-                <Form.Group><Form.Label>Leave type *</Form.Label><Form.Select value={form.leaveTypeId} onChange={(event) => updateForm('leaveTypeId', event.target.value)}><option value="">Select leave type</option>{leaveTypes.map((type) => <option key={type.lvtypid} value={type.lvtypid}>{type.nm}</option>)}</Form.Select></Form.Group>
+                <Form.Group><Form.Label>Leave type *</Form.Label><CustomSelect options={leaveTypes.map((item) => ({ value: item.lvtypid, label: item.nm }))} value={form.leaveTypeId} onChange={(value) => updateForm('leaveTypeId', value)} placeholder="Select leave type" ariaLabel="Leave type" /></Form.Group>
                 <Form.Group><Form.Label>From date *</Form.Label><Form.Control type="date" value={form.fromDate} onChange={(event) => updateForm('fromDate', event.target.value)} /></Form.Group>
                 <Form.Group><Form.Label>To date *</Form.Label><Form.Control type="date" min={form.fromDate} value={form.toDate} onChange={(event) => updateForm('toDate', event.target.value)} /></Form.Group>
                 <Form.Group className="leave-form-full"><Form.Label>Reason *</Form.Label><Form.Control as="textarea" rows={3} value={form.description} onChange={(event) => updateForm('description', event.target.value)} placeholder="Describe the reason for leave" /></Form.Group>

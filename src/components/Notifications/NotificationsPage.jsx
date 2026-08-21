@@ -34,20 +34,15 @@ function NotificationsPage() {
       ...(userType === 'STUDENT' && user.clsnm ? { clsnm: user.clsnm } : {}),
     };
 
-    const responses = userType === 'STAFF'
-      ? await Promise.all([
-        fetchUserNotifications({ ...baseParams, type: 'staff' }),
-        fetchUserNotifications({ ...baseParams, type: 'institute' }),
-      ])
-      : [await fetchUserNotifications(baseParams)];
+    const responses = [await fetchUserNotifications(baseParams)];
 
     const successfulResponses = responses
-      .map((response, responseIndex) => ({ response, responseIndex }))
+      .map((response) => ({ response }))
       .filter(({ response }) => response?.status !== 'error' && !response?.errors?.length);
-    const combined = successfulResponses.flatMap(({ response, responseIndex }) =>
+    const combined = successfulResponses.flatMap(({ response }) =>
       unwrapList(response).map((item) => ({
         ...item,
-        notificationSource: userType === 'STAFF' && responseIndex === 0 ? 'Staff' : 'Institute',
+        notificationSource: String(item.typ || '').toUpperCase() === 'STAFF' ? 'Staff' : 'Institute',
       })),
     );
     const uniqueNotifications = Array.from(

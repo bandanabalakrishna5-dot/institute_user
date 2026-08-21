@@ -12,10 +12,11 @@ import {
   FaPlus,
   FaTrash,
   FaCloudUploadAlt,
-  FaChevronDown,
   FaTimes,
 } from 'react-icons/fa';
 import Layout from '../common/Layout';
+import SectionSelect from '../common/SectionSelect';
+import CustomSelect from '../common/CustomSelect';
 import { AuthContext } from '../../App';
 import {
   fetchInstituteNames,
@@ -86,7 +87,6 @@ function HomeworkPage() {
   const [academicYear, setAcademicYear] = useState('');
   const [classId, setClassId] = useState('');
   const [sectionId, setSectionId] = useState('');
-  const [sectionMenuOpen, setSectionMenuOpen] = useState(false);
   const [subjectId, setSubjectId] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -528,134 +528,42 @@ function HomeworkPage() {
                   <Form.Label>
                     Institute <span className="text-danger">*</span>
                   </Form.Label>
-                  <Form.Select value={instituteId} onChange={handleInstituteChange}>
-                    <option value="">Select institute</option>
-                    {institutes.map((inst) => (
-                      <option key={inst.instid} value={inst.instid}>
-                        {inst.instnm}
-                      </option>
-                    ))}
-                  </Form.Select>
+                  <CustomSelect options={institutes.map((item) => ({ value: item.instid, label: item.instnm }))} value={instituteId} onChange={(value) => handleInstituteChange({ target: { value } })} placeholder="Select institute" ariaLabel="Institute" />
                 </Form.Group>
 
                 <Form.Group>
                   <Form.Label>
                     Branch <span className="text-danger">*</span>
                   </Form.Label>
-                  <Form.Select
-                    value={branchId}
-                    onChange={handleBranchChange}
-                    disabled={!instituteId}
-                  >
-                    <option value="">Select branch</option>
-                    {branches.map((branch) => (
-                      <option key={branch.brcid} value={branch.brcid}>
-                        {branch.brcnm}
-                      </option>
-                    ))}
-                  </Form.Select>
+                  <CustomSelect options={branches.map((item) => ({ value: item.brcid, label: item.brcnm }))} value={branchId} onChange={(value) => handleBranchChange({ target: { value } })} disabled={!instituteId} placeholder="Select branch" ariaLabel="Branch" />
                 </Form.Group>
 
                 <Form.Group>
                   <Form.Label>
                     Academic year <span className="text-danger">*</span>
                   </Form.Label>
-                  <Form.Select
-                    value={academicYear}
-                    onChange={(event) => setAcademicYear(event.target.value)}
-                  >
-                    <option value="">Select academic year</option>
-                    {academicYears.map((year) => (
-                      <option key={year.yrid} value={year.yrnm}>
-                        {year.yrnm}
-                      </option>
-                    ))}
-                  </Form.Select>
+                  <CustomSelect options={academicYears.map((item) => ({ key: item.yrid, value: item.yrnm, label: item.yrnm }))} value={academicYear} onChange={setAcademicYear} placeholder="Select academic year" ariaLabel="Academic year" />
                 </Form.Group>
 
                 <Form.Group>
                   <Form.Label>
                     Class <span className="text-danger">*</span>
                   </Form.Label>
-                  <Form.Select
-                    value={classId}
-                    onChange={handleClassChange}
-                    disabled={!branchId}
-                  >
-                    <option value="">Select class</option>
-                    {classesList.map((classItem) => (
-                      <option key={classItem.clsid} value={classItem.clsid}>
-                        {classItem.clsnm}
-                      </option>
-                    ))}
-                  </Form.Select>
+                  <CustomSelect options={classesList.map((item) => ({ value: item.clsid, label: item.clsnm }))} value={classId} onChange={(value) => handleClassChange({ target: { value } })} disabled={!branchId} placeholder="Select class" ariaLabel="Class" />
                 </Form.Group>
 
                 <Form.Group>
                   <Form.Label>
                     Section <span className="text-danger">*</span>
                   </Form.Label>
-                  <div
-                    className={`hw-mobile-select ${sectionMenuOpen ? 'is-open' : ''}`}
-                    onBlur={(event) => {
-                      if (!event.currentTarget.contains(event.relatedTarget)) setSectionMenuOpen(false);
-                    }}
-                  >
-                    <button
-                      type="button"
-                      className="hw-mobile-select-trigger"
-                      onClick={() => setSectionMenuOpen((open) => !open)}
-                      disabled={!classId}
-                      aria-haspopup="listbox"
-                      aria-expanded={sectionMenuOpen}
-                    >
-                      <span>{sections.find((section) => String(section.secid) === String(sectionId))?.secnm || 'Select section'}</span>
-                      <FaChevronDown />
-                    </button>
-                    {sectionMenuOpen && (
-                      <div className="hw-mobile-select-menu" role="listbox" aria-label="Section">
-                        <button
-                          type="button"
-                          role="option"
-                          aria-selected={!sectionId}
-                          className={!sectionId ? 'selected' : ''}
-                          onClick={() => { setSectionId(''); setSectionMenuOpen(false); }}
-                        >
-                          Select section
-                        </button>
-                        {sections.map((section) => (
-                          <button
-                            type="button"
-                            role="option"
-                            aria-selected={String(section.secid) === String(sectionId)}
-                            className={String(section.secid) === String(sectionId) ? 'selected' : ''}
-                            key={section.secid}
-                            onClick={() => { setSectionId(String(section.secid)); setSectionMenuOpen(false); }}
-                          >
-                            {section.secnm}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <SectionSelect sections={sections} value={sectionId} onChange={setSectionId} disabled={!classId} />
                 </Form.Group>
 
                 <Form.Group>
                   <Form.Label>
                     Subject <span className="text-danger">*</span>
                   </Form.Label>
-                  <Form.Select
-                    value={subjectId}
-                    onChange={(event) => setSubjectId(event.target.value)}
-                    disabled={!classId}
-                  >
-                    <option value="">Select subject</option>
-                    {subjects.map((subject) => (
-                      <option key={subject.subid} value={subject.subid}>
-                        {subject.subnm}
-                      </option>
-                    ))}
-                  </Form.Select>
+                  <CustomSelect options={subjects.map((item) => ({ value: item.subid, label: item.subnm }))} value={subjectId} onChange={setSubjectId} disabled={!classId} placeholder="Select subject" ariaLabel="Subject" />
                 </Form.Group>
 
                 <Form.Group className="hw-form-grid-full">
