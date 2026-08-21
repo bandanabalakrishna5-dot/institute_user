@@ -31,6 +31,7 @@ import {
   hasAnyPermission,
   USER_PORTAL_PERMISSIONS,
 } from '../../services/commonUtills/FormValidations';
+import { fetchInstituteNotificationCount } from '../../services/NotificationServices/notificationServices';
 
 const RoleLabels = {
   STUDENT: 'Student',
@@ -68,6 +69,8 @@ const TRANSPORT_MENU = [
 function Topbar() {
   const { stateAuth, dispatchAuth } = useContext(AuthContext);
   const [showProfileDrawer, setShowProfileDrawer] = useState(false);
+  const [avatarImageFailed, setAvatarImageFailed] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
   const drawerRef = useRef(null);
   const navigate  = useNavigate();
 
@@ -80,6 +83,42 @@ function Topbar() {
   const roleLabel   = RoleLabels[typ] || user.typ || '';
   const cds         = user.cds || '';
   const instituteName = user.instnm || 'Institute';
+  const profileImageUrl = ['STAFF', 'STUDENT'].includes(typ)
+    ? String(user.pturl || '').trim()
+    : '';
+
+  useEffect(() => {
+    setAvatarImageFailed(false);
+  }, [profileImageUrl]);
+
+  useEffect(() => {
+    let active = true;
+    const loadNotificationCount = async () => {
+      if (!user.usrid || !['STAFF', 'STUDENT'].includes(typ)) return;
+      try {
+        const response = await fetchInstituteNotificationCount({
+          instid: user.instid,
+          brcid: user.brcid,
+          acdmcyr: user.acdmcyr,
+          usrid: user.usrid,
+          typ,
+          ...(typ === 'STUDENT' && user.clsnm ? { clsnm: user.clsnm } : {}),
+        });
+        const count = typ === 'STAFF'
+          ? response?.payload?.staffCount
+          : response?.payload?.classCount;
+        if (active) setNotificationCount(Number(count) || 0);
+      } catch (error) {
+        if (active) setNotificationCount(0);
+      }
+    };
+    loadNotificationCount();
+    const notificationPoll = window.setInterval(loadNotificationCount, 10000);
+    return () => {
+      active = false;
+      window.clearInterval(notificationPoll);
+    };
+  }, [typ, user.acdmcyr, user.brcid, user.clsnm, user.instid, user.usrid]);
 
   const getInitials = () => {
     if (!displayName || displayName === 'User') return 'US';
@@ -168,6 +207,7 @@ function Topbar() {
           onClick={() => { setShowProfileDrawer(false); navigate('/notifications'); }}
         >
           <FaBell size={15} />
+          {notificationCount > 0 && <span className="topbar-notification-count">{notificationCount > 99 ? '99+' : notificationCount}</span>}
         </button>
 
         {/* Profile avatar */}
@@ -185,7 +225,14 @@ function Topbar() {
                   : 'linear-gradient(135deg,#2f54eb,#60a5fa)',
               }}
             >
-              {getInitials()}
+              {profileImageUrl && !avatarImageFailed ? (
+                <img
+                  src={profileImageUrl}
+                  alt=""
+                  className="user-profile-avatar-image"
+                  onError={() => setAvatarImageFailed(true)}
+                />
+              ) : getInitials()}
             </div>
             <FaChevronDown className="user-profile-chevron" />
           </div>
@@ -209,7 +256,14 @@ function Topbar() {
                           : 'linear-gradient(135deg,#2f54eb,#60a5fa)',
                       }}
                     >
-                      {getInitials()}
+                      {profileImageUrl && !avatarImageFailed ? (
+                        <img
+                          src={profileImageUrl}
+                          alt=""
+                          className="user-profile-drawer-avatar-image"
+                          onError={() => setAvatarImageFailed(true)}
+                        />
+                      ) : getInitials()}
                     </div>
                     <div>
                       <h5>{displayName}</h5>

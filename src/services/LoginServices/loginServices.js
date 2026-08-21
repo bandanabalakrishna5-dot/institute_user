@@ -1,4 +1,4 @@
-import { apiPostHelper, apiGetHelper } from '../commonUtills/helperAxios';
+import { apiPostHelper, apiGetHelper, apiPutHelper } from '../commonUtills/helperAxios';
 
 const API_URL = process.env.REACT_APP_SCHOOL_BACKEND_URL;
 
@@ -38,5 +38,35 @@ export const fetchStudentProfileById = async (obj) => {
   ).then((response) => {
     finalRes = response.data;
   });
+  return Promise.resolve(finalRes);
+};
+
+export const changePassword = async (obj) => {
+  let finalRes = {};
+  const headers = {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
+  await apiPutHelper(`${API_URL}/user-table/change-password`, obj, headers).then(
+    (response) => {
+      finalRes = response.data;
+    }
+  );
+  return Promise.resolve(finalRes);
+};
+
+export const forgotPassword = async (obj) => {
+  let finalRes = {};
+  const headers = {
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  };
+  await apiPostHelper(`${API_URL}/user-table/forgot-password`, obj, headers).then(
+    (response) => {
+      finalRes = response.data;
+    }
+  );
   return Promise.resolve(finalRes);
 };

@@ -1,4 +1,4 @@
-import { b2cLogin } from '../../services/LoginServices/loginServices';
+import { b2cLogin, forgotPassword } from '../../services/LoginServices/loginServices';
 
 export const loginUserValidate = async (obj) => {
   let login_res = undefined;
@@ -13,4 +13,15 @@ export const loginUserValidate = async (obj) => {
     login_res = undefined;
   }
   return Promise.resolve(login_res);
+};
+
+export const forgotPasswordUser = async (obj) => {
+  let result = undefined;
+  try {
+    const response = await forgotPassword(obj);
+    result = response;
+  } catch (e) {
+    result = undefined;
+  }
+  return Promise.resolve(result);
 };

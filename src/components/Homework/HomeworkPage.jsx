@@ -12,6 +12,7 @@ import {
   FaPlus,
   FaTrash,
   FaCloudUploadAlt,
+  FaChevronDown,
   FaTimes,
 } from 'react-icons/fa';
 import Layout from '../common/Layout';
@@ -85,6 +86,7 @@ function HomeworkPage() {
   const [academicYear, setAcademicYear] = useState('');
   const [classId, setClassId] = useState('');
   const [sectionId, setSectionId] = useState('');
+  const [sectionMenuOpen, setSectionMenuOpen] = useState(false);
   const [subjectId, setSubjectId] = useState('');
   const [description, setDescription] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -593,18 +595,49 @@ function HomeworkPage() {
                   <Form.Label>
                     Section <span className="text-danger">*</span>
                   </Form.Label>
-                  <Form.Select
-                    value={sectionId}
-                    onChange={(event) => setSectionId(event.target.value)}
-                    disabled={!classId}
+                  <div
+                    className={`hw-mobile-select ${sectionMenuOpen ? 'is-open' : ''}`}
+                    onBlur={(event) => {
+                      if (!event.currentTarget.contains(event.relatedTarget)) setSectionMenuOpen(false);
+                    }}
                   >
-                    <option value="">Select section</option>
-                    {sections.map((section) => (
-                      <option key={section.secid} value={section.secid}>
-                        {section.secnm}
-                      </option>
-                    ))}
-                  </Form.Select>
+                    <button
+                      type="button"
+                      className="hw-mobile-select-trigger"
+                      onClick={() => setSectionMenuOpen((open) => !open)}
+                      disabled={!classId}
+                      aria-haspopup="listbox"
+                      aria-expanded={sectionMenuOpen}
+                    >
+                      <span>{sections.find((section) => String(section.secid) === String(sectionId))?.secnm || 'Select section'}</span>
+                      <FaChevronDown />
+                    </button>
+                    {sectionMenuOpen && (
+                      <div className="hw-mobile-select-menu" role="listbox" aria-label="Section">
+                        <button
+                          type="button"
+                          role="option"
+                          aria-selected={!sectionId}
+                          className={!sectionId ? 'selected' : ''}
+                          onClick={() => { setSectionId(''); setSectionMenuOpen(false); }}
+                        >
+                          Select section
+                        </button>
+                        {sections.map((section) => (
+                          <button
+                            type="button"
+                            role="option"
+                            aria-selected={String(section.secid) === String(sectionId)}
+                            className={String(section.secid) === String(sectionId) ? 'selected' : ''}
+                            key={section.secid}
+                            onClick={() => { setSectionId(String(section.secid)); setSectionMenuOpen(false); }}
+                          >
+                            {section.secnm}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </Form.Group>
 
                 <Form.Group>
@@ -778,46 +811,48 @@ function HomeworkPage() {
                             </span>
                           </div>
 
-                          <div className="hw-feed-tags">
-                            {homework.clsnm && (
-                              <span className="hw-tag">
-                                <FaLayerGroup />
-                                {homework.clsnm}
-                              </span>
+                          <div className="hw-feed-meta-row">
+                            <div className="hw-feed-tags">
+                              {homework.clsnm && (
+                                <span className="hw-tag">
+                                  <FaLayerGroup />
+                                  {homework.clsnm}
+                                </span>
+                              )}
+                              {homework.senm && <span className="hw-tag">{homework.senm}</span>}
+                            </div>
+
+                            {(canUpdateHomework || canDeleteHomework) && (
+                              <div className="hw-card-actions">
+                                {canUpdateHomework && (
+                                  <button
+                                    type="button"
+                                    className="hw-action-btn hw-action-edit"
+                                    onClick={() => startEdit(homework)}
+                                    aria-label="Edit homework"
+                                  >
+                                    <FaEdit />
+                                  </button>
+                                )}
+                                {canDeleteHomework && (
+                                  <button
+                                    type="button"
+                                    className="hw-action-btn hw-action-delete"
+                                    onClick={() => handleDelete(homework.hmwkudid)}
+                                    disabled={deletingId === homework.hmwkudid}
+                                    aria-label="Delete homework"
+                                  >
+                                    {deletingId === homework.hmwkudid ? (
+                                      <Spinner as="span" animation="border" size="sm" />
+                                    ) : (
+                                      <FaTrash />
+                                    )}
+                                  </button>
+                                )}
+                              </div>
                             )}
-                            {homework.senm && <span className="hw-tag">{homework.senm}</span>}
                           </div>
                         </div>
-
-                        {(canUpdateHomework || canDeleteHomework) && (
-                          <div className="hw-card-actions">
-                            {canUpdateHomework && (
-                              <button
-                                type="button"
-                                className="hw-action-btn hw-action-edit"
-                                onClick={() => startEdit(homework)}
-                                aria-label="Edit homework"
-                              >
-                                <FaEdit />
-                              </button>
-                            )}
-                            {canDeleteHomework && (
-                              <button
-                                type="button"
-                                className="hw-action-btn hw-action-delete"
-                                onClick={() => handleDelete(homework.hmwkudid)}
-                                disabled={deletingId === homework.hmwkudid}
-                                aria-label="Delete homework"
-                              >
-                                {deletingId === homework.hmwkudid ? (
-                                  <Spinner as="span" animation="border" size="sm" />
-                                ) : (
-                                  <FaTrash />
-                                )}
-                              </button>
-                            )}
-                          </div>
-                        )}
                       </div>
 
                       <p className="hw-feed-description">{homework.desc}</p>

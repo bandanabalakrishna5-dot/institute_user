@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { Container, Card, Table, Badge, Spinner } from 'react-bootstrap';
+import { Container, Card, Spinner } from 'react-bootstrap';
+import { FaArrowLeft, FaChalkboardTeacher } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../common/Layout';
 import { AuthContext } from '../../App';
@@ -41,20 +42,21 @@ function StaffProfile() {
 
   return (
     <Layout>
-      <Container className="py-4">
+      <Container className="user-profile-page py-4">
         <button
-          className="btn btn-sm btn-light mb-3"
+          type="button"
+          className="user-profile-back"
           onClick={() => navigate('/dashboard')}
         >
-          ← Back to Dashboard
+          <FaArrowLeft /> <span>Dashboard</span>
         </button>
 
-        <Card className="shadow-sm">
-          <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
-            <h5 className="mb-0">Staff Profile</h5>
-            <Badge bg="light" text="dark">Staff</Badge>
+        <Card className="user-profile-card">
+          <Card.Header className="user-profile-card-header">
+            <div><span>ACCOUNT</span><h1>Staff Profile</h1></div>
+            <span className="user-profile-role-badge"><FaChalkboardTeacher /> Staff</span>
           </Card.Header>
-          <Card.Body>
+          <Card.Body className="user-profile-card-body">
             {loading ? (
               <div className="text-center py-5">
                 <Spinner animation="border" variant="primary" />
@@ -63,45 +65,32 @@ function StaffProfile() {
               <div className="text-center text-muted py-4">{errorMsg}</div>
             ) : (
               <>
-                <div className="text-center mb-3">
+                <div className="user-profile-hero">
                   {profile.pturl ? (
                     <img
                       src={profile.pturl}
                       alt="staff"
-                      className="rounded-circle"
-                      style={{ width: '140px', height: '140px', objectFit: 'cover' }}
+                      className="user-profile-photo"
                     />
                   ) : (
-                    <div
-                      className="rounded-circle d-inline-flex align-items-center justify-content-center"
-                      style={{
-                        width: '140px',
-                        height: '140px',
-                        backgroundColor: '#eff6ff',
-                        color: '#2f54eb',
-                        fontSize: '3rem',
-                      }}
-                    >
+                    <div className="user-profile-photo user-profile-initial">
                       {(profile.stfnm || 'U').charAt(0)}
                     </div>
                   )}
-                  <h5 className="mt-3 font-weight-bold">{profile.stfnm}</h5>
+                  <div><span>STAFF MEMBER</span><h2>{profile.stfnm}</h2></div>
                 </div>
-                <Table striped hover responsive size="sm">
-                  <tbody>
-                    {Object.entries(StaffLabels).map(([k, label]) => (
-                      <tr key={k}>
-                        <td style={{ width: '40%', fontWeight: 600 }}>{label}</td>
-                        <td>
-                          {k === 'dob' && profile[k] 
-                            ? new Date(profile[k]).toLocaleDateString()
-                            : profile[k] != null ? String(profile[k]) : '—'
-                          }
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
+                <div className="user-profile-details">
+                  {Object.entries(StaffLabels).map(([k, label]) => (
+                    <div className="user-profile-detail-row" key={k}>
+                      <span>{label}</span>
+                      <strong>
+                        {k === 'dob' && profile[k]
+                          ? new Date(profile[k]).toLocaleDateString()
+                          : profile[k] != null && String(profile[k]).trim() ? String(profile[k]) : '—'}
+                      </strong>
+                    </div>
+                  ))}
+                </div>
               </>
             )}
           </Card.Body>

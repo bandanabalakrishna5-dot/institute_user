@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Alert } from 'react-bootstrap';
+import { Alert, Modal, Button, Form } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
-import { loginUserValidate } from './operation';
-import { FaEye, FaEyeSlash, FaLock, FaUserAlt } from 'react-icons/fa';
+import { loginUserValidate, forgotPasswordUser } from './operation';
+import { FaEye, FaEyeSlash, FaLock, FaUserAlt, FaStar, FaGraduationCap, FaBookOpen } from 'react-icons/fa';
+import { BsShield } from 'react-icons/bs';
 import { emailValidation } from '../../services/commonUtills/FormValidations';
 import { AuthContext } from '../../App';
 
@@ -22,7 +23,12 @@ function Login() {
   const [showPassword, setShowPassword] = useState(true);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
-  const [loginMethod, setLoginMethod] = useState('password'); // password or otp
+  
+  // Forgot Password Modal State
+  const [showChangePwd, setShowChangePwd] = useState(false);
+  const [cpEmail, setCpEmail] = useState('');
+  const [cpLoading, setCpLoading] = useState(false);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -114,8 +120,70 @@ function Login() {
     }
   };
 
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    if (!cpEmail) {
+      setAlertShow(true);
+      setAlertMessage('Please enter your email or mobile number');
+      setAlertVarient('danger');
+      hideMessage();
+      return;
+    }
+    setCpLoading(true);
+    const obj = { emlid: cpEmail, mobile: cpEmail };
+    const res = await forgotPasswordUser(obj);
+    
+    setCpLoading(false);
+    if (res && res.status === 'success') {
+      setAlertShow(true);
+      setAlertMessage(res?.payload?.msg || 'Recovery instructions sent successfully');
+      setAlertVarient('success');
+      hideMessage();
+      setShowChangePwd(false);
+      setCpEmail('');
+    } else {
+      setAlertShow(true);
+      setAlertMessage(res?.error?.message || 'Unable to send recovery instructions');
+      setAlertVarient('danger');
+      hideMessage();
+    }
+  };
+
   return (
     <>
+      <Modal
+        show={showChangePwd}
+        onHide={() => setShowChangePwd(false)}
+        centered
+        className="login-change-password-modal"
+        contentClassName="login-change-password-content"
+      >
+        <Modal.Header closeButton className="login-change-password-header">
+          <div>
+            <Modal.Title>Forgot Password?</Modal.Title>
+            <p>Enter your registered email or mobile number to recover your account.</p>
+          </div>
+        </Modal.Header>
+        <Modal.Body className="login-change-password-body">
+          <Form onSubmit={handleForgotPassword}>
+            <Form.Group className="login-change-password-field">
+              <Form.Label>Email or Mobile</Form.Label>
+              <Form.Control
+                type="text"
+                inputMode="email"
+                autoComplete="username"
+                placeholder="Enter email or mobile"
+                value={cpEmail}
+                onChange={(e) => setCpEmail(e.target.value)}
+              />
+            </Form.Group>
+            <Button type="submit" className="login-change-password-submit" disabled={cpLoading}>
+              {cpLoading ? 'Sending...' : 'Send Recovery Instructions'}
+            </Button>
+          </Form>
+        </Modal.Body>
+      </Modal>
+
       <Alert
         className="notification"
         variant={alertVarient}
@@ -144,6 +212,81 @@ function Login() {
             font-family: 'Inter', sans-serif;
             overflow: hidden;
           }
+          .login-change-password-content {
+            overflow: hidden;
+            border: 0;
+            border-radius: 22px;
+            box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+          }
+          .login-change-password-header {
+            align-items: flex-start;
+            padding: 24px 24px 20px;
+            border-bottom: 1px solid #e8eef7;
+            background: linear-gradient(135deg, #f2f7ff 0%, #ffffff 72%);
+          }
+          .login-change-password-header .modal-title {
+            color: #17224b;
+            font-size: 24px;
+            font-weight: 850;
+            letter-spacing: -0.025em;
+          }
+          .login-change-password-header p {
+            margin: 6px 30px 0 0;
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.45;
+          }
+          .login-change-password-header .btn-close {
+            margin: 0;
+            padding: 8px;
+            border-radius: 50%;
+            background-size: 12px;
+          }
+          .login-change-password-body { padding: 22px 24px 24px; }
+          .login-change-password-field { margin-bottom: 18px; }
+          .login-change-password-field .form-label {
+            margin-bottom: 7px;
+            color: #334155;
+            font-size: 13px;
+            font-weight: 700;
+          }
+          .login-change-password-field .form-control {
+            min-height: 50px;
+            padding: 12px 14px;
+            border: 1px solid #d6dfec;
+            border-radius: 12px;
+            background: #f8fbff;
+            color: #172033;
+            font-size: 16px;
+            box-shadow: none;
+          }
+          .login-change-password-field .form-control:focus {
+            border-color: #4672ee;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(47, 84, 235, 0.12);
+          }
+          .login-change-password-field .form-text {
+            display: block;
+            margin-top: 6px;
+            color: #8492a6;
+            font-size: 11px;
+          }
+          .login-change-password-submit {
+            width: 100%;
+            min-height: 52px;
+            margin-top: 2px;
+            border: 0;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #315bea 0%, #34248b 100%);
+            font-size: 15px;
+            font-weight: 800;
+            box-shadow: 0 10px 22px rgba(49, 88, 216, 0.22);
+          }
+          .login-change-password-submit:hover,
+          .login-change-password-submit:focus {
+            background: linear-gradient(135deg, #264bd0 0%, #2b1e7b 100%);
+          }
+          .login-change-password-submit:disabled { opacity: 0.72; }
           .login-container-new:before,
           .login-container-new:after {
             content: '';
@@ -244,40 +387,85 @@ function Login() {
             margin-bottom: 20px;
           }
           .login-logo-core {
-            width: 150px;
-            height: 150px;
+            width: 140px;
+            height: 140px;
             border-radius: 50%;
-            background: radial-gradient(#fbfaff, #b0d2ff);
-            border: 4px solid #d6eaff;
-            box-shadow: inset 0 0 0 6px #f8fbff, 0 0 12px rgba(45, 115, 231, 0.15);
-            background-image: radial-gradient(circle at center, #1e56d7 0%, #6ad6f6 55%, #effaff 100%);
+            background: radial-gradient(#295ce8, #183dc2);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 0 6px #f8fafc, 0 8px 24px rgba(24, 61, 194, 0.25);
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
           }
           .login-logo-core:before {
             content: '';
             position: absolute;
-            inset: -10px;
+            inset: -8px;
             border-radius: 50%;
-            border: 2px dashed #c4d8ff;
+            border: 1px dashed rgba(41, 92, 232, 0.3);
           }
-          .login-logo-core:after {
-            content: '✳';
-            position: absolute;
-            left: 50%;
-            top: 50%;
-            transform: translate(-50%, -50%);
-            width: 88px;
-            height: 88px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #2a60e6, #49bde6);
-            color: #fff;
+          
+          .crest-container {
+            position: relative;
             display: flex;
+            flex-direction: column;
             align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            font-weight: 900;
-            box-shadow: inset 0 0 0 4px #fcfdff;
-            opacity: 0.95;
+            margin-top: 10px;
+          }
+          .crest-stars {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 2px;
+            align-items: flex-end;
+          }
+          .crest-stars .center-star {
+            margin-bottom: 4px;
+          }
+          .crest-shield-wrap {
+            position: relative;
+            width: 60px;
+            height: 70px;
+          }
+          .crest-shield-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+          }
+          .crest-icons {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1px;
+            z-index: 2;
+            margin-top: -2px; /* slight adjustment upwards for optical center */
+          }
+          .crest-wreath-left, .crest-wreath-right {
+            position: absolute;
+            top: 40%;
+            width: 16px;
+            height: 44px;
+            border: 1px dashed rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+          }
+          .crest-wreath-left {
+            left: -18px;
+            border-right: none;
+            border-top: none;
+            transform: rotate(20deg);
+          }
+          .crest-wreath-right {
+            right: -18px;
+            border-left: none;
+            border-top: none;
+            transform: rotate(-20deg);
           }
           .login-welcome {
             text-align: center;
@@ -340,6 +528,8 @@ function Login() {
             align-items: center;
             justify-content: center;
             padding: 0 1rem;
+            border: 0;
+            background: transparent;
             cursor: pointer;
             color: #94a3b8;
           }
@@ -441,17 +631,147 @@ function Login() {
             font-size: 17px;
           }
           @media (max-width: 768px) {
+            .login-change-password-modal { padding-left: 0 !important; }
+            .login-change-password-modal .modal-dialog {
+              align-items: flex-end;
+              min-height: 100%;
+              margin: 0;
+            }
+            .login-change-password-content {
+              border-radius: 24px 24px 0 0;
+              padding-bottom: env(safe-area-inset-bottom);
+            }
+            .login-change-password-header { padding: 22px 20px 18px; }
+            .login-change-password-header .modal-title { font-size: 22px; }
+            .login-change-password-body { padding: 20px; }
+            .login-container-new {
+              min-height: 100dvh;
+              overflow-x: hidden;
+              overflow-y: auto;
+            }
+            .login-container-new:before,
+            .login-container-new:after {
+              width: 72%;
+              height: 96px;
+              top: -42px;
+              opacity: 0.9;
+            }
+            .login-container-new:before {
+              left: -36%;
+              transform: rotate(-12deg);
+            }
+            .login-container-new:after {
+              right: -38%;
+              transform: rotate(25deg);
+            }
+            .login-page-skyline {
+              position: fixed;
+              bottom: -72px;
+              height: 170px;
+              opacity: 0.5;
+            }
             .login-right-panel-new {
-              padding: 1rem;
+              justify-content: flex-start;
+              min-height: 100dvh;
+              padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
             }
             .login-auth-shell {
-              padding: 36px 24px;
+              width: 100%;
+              max-width: 440px;
               min-height: auto;
+              margin: auto 0;
+              padding: 32px 24px 26px;
+              border-radius: 20px;
+              box-shadow: 0 14px 40px rgba(63, 91, 151, 0.14);
+            }
+            .login-auth-shell:before {
+              top: -22px;
+              left: 16%;
+              right: 16%;
+              height: 48px;
+            }
+            .login-logo {
+              margin-bottom: 18px;
             }
             .login-logo-core {
-              width: 118px;
-              height: 118px;
+              width: 104px;
+              height: 104px;
             }
+            .crest-container { transform: scale(0.82); }
+            .login-welcome { margin-bottom: 28px; }
+            .login-welcome h1 {
+              font-size: clamp(30px, 10vw, 40px);
+              line-height: 1.05;
+            }
+            .login-welcome p { font-size: clamp(16px, 4.8vw, 20px); }
+            .login-form-wrap { gap: 14px; }
+            .login-input-group .login-input-icon {
+              width: 44px;
+              flex: 0 0 44px;
+            }
+            .login-input-group input {
+              min-width: 0;
+              padding: 0.78rem 0.85rem;
+              font-size: 16px;
+            }
+            .login-password-toggle { flex: 0 0 44px; }
+            .login-input-row {
+              gap: 16px;
+              margin-bottom: 8px;
+              font-size: 12px;
+            }
+            .login-forgot {
+              text-align: right;
+              white-space: nowrap;
+            }
+            .login-btn-primary {
+              min-height: 50px;
+              padding: 0.75rem 1.25rem;
+            }
+            .login-footer-band {
+              margin-top: 34px;
+              gap: 8px;
+              font-size: 11px;
+              text-align: center;
+              line-height: 1.35;
+              position: relative;
+              z-index: 1;
+            }
+            .login-footer-band .shield {
+              width: 34px;
+              height: 34px;
+              flex: 0 0 34px;
+            }
+          }
+          @media (max-width: 390px) {
+            .login-right-panel-new { padding-inline: 12px; }
+            .login-auth-shell { padding: 28px 18px 22px; }
+            .login-logo-core { width: 92px; height: 92px; }
+            .login-welcome { margin-bottom: 22px; }
+            .login-welcome h1 { font-size: 30px; }
+            .login-welcome p { font-size: 16px; }
+            .login-input-row { align-items: flex-start; }
+            .login-footer-band { margin-top: 26px; }
+          }
+          @media (max-width: 350px) {
+            .login-input-row {
+              flex-direction: column;
+              gap: 10px;
+            }
+            .login-forgot { align-self: flex-end; }
+          }
+          @media (max-height: 700px) and (max-width: 768px) {
+            .login-right-panel-new { padding-block: 12px; }
+            .login-auth-shell {
+              margin: 0;
+              padding-top: 22px;
+              padding-bottom: 18px;
+            }
+            .login-logo { margin-bottom: 12px; }
+            .login-logo-core { width: 82px; height: 82px; }
+            .crest-container { transform: scale(0.68); }
+            .login-welcome { margin-bottom: 18px; }
+            .login-footer-band { margin-top: 20px; }
           }
         `}</style>
 
@@ -460,7 +780,24 @@ function Login() {
         <div className="login-right-panel-new">
           <div className="login-auth-shell">
             <div className="login-logo">
-              <div className="login-logo-core" aria-hidden="true" />
+              <div className="login-logo-core">
+                <div className="crest-container">
+                  <div className="crest-stars">
+                    <FaStar size={12} color="#fff" />
+                    <FaStar size={16} color="#fff" className="center-star" />
+                    <FaStar size={12} color="#fff" />
+                  </div>
+                  <div className="crest-shield-wrap">
+                    <BsShield className="crest-shield-bg" color="#fff" size="100%" />
+                    <div className="crest-icons">
+                      <FaGraduationCap size={26} color="#fff" />
+                      <FaBookOpen size={14} color="#fff" />
+                    </div>
+                  </div>
+                  <div className="crest-wreath-left"></div>
+                  <div className="crest-wreath-right"></div>
+                </div>
+              </div>
             </div>
 
             <div className="login-welcome">
@@ -497,25 +834,20 @@ function Login() {
                   </div>
                   <input
                     id="pswrd"
-                    type={loginMethod === 'otp' ? 'text' : (showPassword ? 'password' : 'text')}
-                    placeholder={loginMethod === 'otp' ? 'Enter OTP' : 'Password'}
+                    type={showPassword ? 'password' : 'text'}
+                    placeholder="Password"
                     value={password}
                     onChange={handleChange}
                     onKeyDown={loginEnter}
                   />
-                  {loginMethod === 'password' && (
-                    <div className="login-password-toggle" onClick={showHidePassword}>
-                      {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
-                    </div>
-                  )}
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
-                  <span 
-                    style={{ fontSize: 12, color: '#2a6eca', cursor: 'pointer', fontWeight: 600 }}
-                    onClick={() => setLoginMethod(loginMethod === 'password' ? 'otp' : 'password')}
+                  <button
+                    type="button"
+                    className="login-password-toggle"
+                    onClick={showHidePassword}
+                    aria-label={showPassword ? 'Show password' : 'Hide password'}
                   >
-                    {loginMethod === 'password' ? 'Login with OTP' : 'Login with Password'}
-                  </span>
+                    {showPassword ? <FaEyeSlash size={16} /> : <FaEye size={16} />}
+                  </button>
                 </div>
                 {passwordError && (
                   <div style={{ color: '#ef4444', fontSize: '0.78rem', marginTop: '0.35rem', textAlign: 'left', fontWeight: 500 }}>
@@ -529,7 +861,7 @@ function Login() {
                   <input type="checkbox" />
                   Remember me
                 </label>
-                <span className="login-forgot">Forgot Password?</span>
+                <span className="login-forgot" style={{cursor: 'pointer'}} onClick={() => setShowChangePwd(true)}>Forgot Password?</span>
               </div>
 
               <button className="login-btn-primary" onClick={handleSubmit} disabled={isLoading}>

@@ -9,3 +9,11 @@ export const fetchUserNotifications = async (params) => {
   });
   return response.data;
 };
+
+export const fetchInstituteNotificationCount = async (params) => {
+  const response = await apiGetHelper(`${API_URL}/notification/fetch-Institute-notifications`, {
+    headers: { 'Content-Type': 'application/json' },
+    params,
+  });
+  return response.data;
+};

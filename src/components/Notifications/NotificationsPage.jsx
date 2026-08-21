@@ -26,18 +26,40 @@ function NotificationsPage() {
   const loadNotifications = useCallback(async () => {
     setLoading(true);
     setError('');
-    const response = await fetchUserNotifications({
+    const baseParams = {
       instid: user.instid,
       brcid: user.brcid,
       acdmcyr: user.acdmcyr,
       typ: userType,
       ...(userType === 'STUDENT' && user.clsnm ? { clsnm: user.clsnm } : {}),
-    });
-    if (response?.status === 'error' || response?.errors?.length) {
+    };
+
+    const responses = userType === 'STAFF'
+      ? await Promise.all([
+        fetchUserNotifications({ ...baseParams, type: 'staff' }),
+        fetchUserNotifications({ ...baseParams, type: 'institute' }),
+      ])
+      : [await fetchUserNotifications(baseParams)];
+
+    const successfulResponses = responses
+      .map((response, responseIndex) => ({ response, responseIndex }))
+      .filter(({ response }) => response?.status !== 'error' && !response?.errors?.length);
+    const combined = successfulResponses.flatMap(({ response, responseIndex }) =>
+      unwrapList(response).map((item) => ({
+        ...item,
+        notificationSource: userType === 'STAFF' && responseIndex === 0 ? 'Staff' : 'Institute',
+      })),
+    );
+    const uniqueNotifications = Array.from(
+      new Map(combined.map((item, index) => [`${item.ntfid ?? index}-${item.notificationSource}`, item])).values(),
+    );
+
+    if (!successfulResponses.length) {
+      const response = responses[0];
       setError(response?.error?.message || response?.errors?.[0]?.errorMessage || 'Unable to load notifications.');
       setNotifications([]);
     } else {
-      setNotifications(unwrapList(response));
+      setNotifications(uniqueNotifications);
     }
     setLoading(false);
   }, [user.acdmcyr, user.brcid, user.clsnm, user.instid, userType]);
@@ -64,15 +86,15 @@ function NotificationsPage() {
         ) : notifications.length ? (
           <div className="notifications-list">
             {notifications.map((item, index) => (
-              <article className="notification-card" key={item.ntfid || index}>
+              <article className="notification-card" key={`${item.notificationSource || 'notification'}-${item.ntfid || index}`}>
                 <div className="notification-card-icon"><FaBell /></div>
                 <div className="notification-card-copy">
                   <div className="notification-card-heading">
-                    <h2>{item.hdng || 'Institute notification'}</h2>
+                    <h2>{item.hdng || `${item.notificationSource || 'Institute'} notification`}</h2>
                     {item.dt && <time><FaCalendarAlt /> {item.dt}</time>}
                   </div>
                   <p>{item.desc || 'No additional details provided.'}</p>
-                  {(item.instnm || item.brcnm) && <small>{[item.instnm, item.brcnm].filter(Boolean).join(' • ')}</small>}
+                  <small>{[item.notificationSource && `${item.notificationSource} notification`, item.instnm, item.brcnm].filter(Boolean).join(' • ')}</small>
                 </div>
               </article>
             ))}

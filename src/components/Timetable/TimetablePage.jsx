@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { FaArrowLeft, FaBookOpen, FaCalendarDay, FaChalkboardTeacher, FaClock } from 'react-icons/fa';
 import { AuthContext } from '../../App';
 import Layout from '../common/Layout';
-import { fetchStaffDailyTimetable, fetchStaffPeriodTopicDetails, updateSubSyllabusStatus } from '../../services/TimetableServices/timetableServices';
+import { fetchStaffDailyTimetable, fetchStaffPeriodTopicDetails, formatPeriodLabel, uniqueTimetablePeriods, updateSubSyllabusStatus } from '../../services/TimetableServices/timetableServices';
 
 const getParams = (user) => ({
   stfid: user.stfid,
@@ -47,7 +47,7 @@ function TimetablePage() {
     setError('');
     const response = await fetchStaffDailyTimetable(getParams(user));
     setLoading(false);
-    if (response?.status === 'success') setPeriods(response.payload || []);
+    if (response?.status === 'success') setPeriods(uniqueTimetablePeriods(response.payload || []));
     else setError(response?.error?.message || 'Unable to load today’s timetable.');
   };
 
@@ -94,16 +94,16 @@ function TimetablePage() {
           <div className="tt-period-list">
             {periods.map((period, index) => (
               <button type="button" className={`tt-period-card ${selectedPeriod?.clsprid === period.clsprid ? 'active' : ''}`} key={period.clsprid || index} onClick={() => openPeriod(period)}>
-                <span className="tt-period-number">{index + 1}</span>
+                <span className="tt-period-number">{period.prd ?? index + 1}</span>
                 <span className="tt-period-main"><strong>{period.subnm || period.subcd || 'Subject'}</strong><small><FaChalkboardTeacher /> {period.clsnm || 'Class'}{period.secnm ? ` · ${period.secnm}` : ''}</small></span>
-                <span className="tt-period-time"><FaClock /> {period.prd || `Period ${index + 1}`}</span>
+                <span className="tt-period-time"><FaClock /> {formatPeriodLabel(period, index)}</span>
               </button>
             ))}
           </div>
         )}
 
         {selectedPeriod && <section className="tt-topic-panel">
-          <div className="tt-topic-head"><div><span className="hw-kicker">Lesson details</span><h2>{selectedPeriod.subnm || 'Period topic'}</h2></div><span className="hw-status-badge">{selectedPeriod.prd}</span></div>
+          <div className="tt-topic-head"><div><span className="hw-kicker">Lesson details</span><h2>{selectedPeriod.subnm || 'Period topic'}</h2></div><span className="hw-status-badge">{formatPeriodLabel(selectedPeriod)}</span></div>
           {detailLoading ? <div className="tt-topic-loading"><Spinner animation="border" size="sm" /> Loading topic...</div> : topicDetails.length ? topicDetails.map((detail, index) => {
             const currentStatus = normalizedTopicStatus(detail.status);
             const isSaving = savingStatusId === detail.subsydetlid;

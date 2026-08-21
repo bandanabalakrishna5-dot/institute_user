@@ -1,5 +1,5 @@
-import React from 'react';
-import { Card } from 'react-bootstrap';
+import React, { useEffect, useState } from 'react';
+import { Card, Spinner } from 'react-bootstrap';
 import {
   FaBookOpen,
   FaBus,
@@ -11,16 +11,51 @@ import {
   FaFileInvoiceDollar,
   FaGraduationCap,
   FaUserCircle,
+  FaClock,
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import {
   hasAnyPermission,
   USER_PORTAL_PERMISSIONS,
 } from '../../services/commonUtills/FormValidations';
+import {
+  fetchStudentDailyTimetable,
+  formatPeriodLabel,
+  uniqueTimetablePeriods,
+} from '../../services/TimetableServices/timetableServices';
 
 function StudentDashboard({ user }) {
   const navigate = useNavigate();
   const cds = user.cds || '';
+  const canOpenTimetable = hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.TIMETABLE);
+  const [todayClasses, setTodayClasses] = useState([]);
+  const [classesLoading, setClassesLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    const loadTodayClasses = async () => {
+      if (!canOpenTimetable || !user.instid || !user.brcid || !user.clsid || !user.secid || !user.acdmcyr) {
+        setClassesLoading(false);
+        return;
+      }
+      try {
+        const response = await fetchStudentDailyTimetable({
+          instid: user.instid,
+          brcid: user.brcid,
+          clsid: user.clsid,
+          secid: user.secid,
+          acdmcyr: user.acdmcyr,
+        });
+        if (active) setTodayClasses(response?.status === 'success' ? uniqueTimetablePeriods(response.payload || []) : []);
+      } catch (error) {
+        if (active) setTodayClasses([]);
+      } finally {
+        if (active) setClassesLoading(false);
+      }
+    };
+    loadTodayClasses();
+    return () => { active = false; };
+  }, [canOpenTimetable, user.acdmcyr, user.brcid, user.clsid, user.instid, user.secid]);
   const exploreItems = [
     hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.TIMETABLE) && {
       label: 'Today’s Timetable', icon: <FaChalkboardTeacher />, color: 'blue',
@@ -58,17 +93,28 @@ function StudentDashboard({ user }) {
   ].filter(Boolean);
 
   return (
-    <div className="dashboard-content">
-      <div className="welcome-banner">
+    <div className="dashboard-content student-dashboard-content">
+      <div className="welcome-banner staff-welcome-banner student-welcome-banner">
+        <span className="staff-welcome-kicker">STUDENT DASHBOARD</span>
         <h2>Good Morning, {user.stdnm || 'Student'}!</h2>
         <p>Ready to learn today?</p>
       </div>
 
       <div className="feed-section">
-        <h6 className="feed-title">Today's Classes</h6>
-        <Card className="feed-card mb-4">
-          <Card.Body className="text-center text-muted">
-            <div className="py-3">No classes scheduled for today</div>
+        <div className="staff-section-heading student-section-heading">
+          <div>
+            <span>DAILY SCHEDULE</span>
+            <h6 className="feed-title">Today's Classes</h6>
+          </div>
+          {todayClasses.length > 0 && <small>{todayClasses.length} {todayClasses.length === 1 ? 'class' : 'classes'}</small>}
+        </div>
+        <Card className="feed-card staff-timetable-card student-classes-card mb-4">
+          <Card.Body className={todayClasses.length ? 'staff-timetable-preview' : 'text-center text-muted'}>
+            {classesLoading ? <div className="student-classes-empty"><Spinner animation="border" size="sm" /><small>Loading today’s classes...</small></div> : todayClasses.length ? todayClasses.slice(0, 4).map((period, index) => <div className="staff-timetable-row" key={period.clsprid || index}><span className="staff-period-badge"><FaClock /> {formatPeriodLabel(period, index)}</span><span className="staff-period-copy"><strong>{period.subnm || period.subcd || 'Subject'}</strong><small>{period.clsnm}{period.secnm ? ` · ${period.secnm}` : ''}</small></span></div>) : <div className="student-classes-empty">
+              <span><FaCalendarAlt /></span>
+              <strong>No classes scheduled</strong>
+              <small>Your timetable is clear for today.</small>
+            </div>}
           </Card.Body>
         </Card>
 

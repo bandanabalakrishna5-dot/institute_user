@@ -33,3 +33,27 @@ export const updateStudentAttendance = async (payload) => {
   });
   return Promise.resolve(finalRes);
 };
+
+export const fetchStaffAttendance = fetchStudentAttendance;
+export const updateStaffAttendance = updateStudentAttendance;
+
+export const fetchStaffMonthlyAttendance = async (params) => {
+  let finalRes = {};
+  await apiGetHelper(`${API_URL}/attendance/monthly-attendance`, {
+    headers: { 'Content-Type': 'application/json' },
+    params,
+  }).then((response) => {
+    finalRes = response.data;
+  });
+  return Promise.resolve(finalRes);
+};
+
+export const updateStaffMonthlyAttendance = async (payload) => {
+  let finalRes = {};
+  await apiPutHelper(`${API_URL}/attendance/update-student-middle-year`, payload, {
+    headers: { 'Content-Type': 'application/json' },
+  }).then((response) => {
+    finalRes = response.data;
+  });
+  return Promise.resolve(finalRes);
+};

@@ -8,6 +8,7 @@ import Profile from '../../components/Profile/index';
 import StaffProfile from '../../components/StaffProfile/index';
 import HomeworkPage from '../../components/Homework/HomeworkPage';
 import AttendanceRoute from '../../components/Attendance/AttendanceRoute';
+import StaffSelfAttendancePage from '../../components/Attendance/StaffSelfAttendancePage';
 import StaffLeavePage from '../../components/Leave/StaffLeavePage';
 import StudentLeavePage from '../../components/Leave/StudentLeavePage';
 import TimetablePage from '../../components/Timetable/TimetablePage';
@@ -136,6 +137,17 @@ export const AppRouters = () => {
               userTypes={['STUDENT']}
             >
               <StudentLeavePage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/staff-attendance"
+          element={
+            <ProtectedRoute
+              permissionCodes={USER_PORTAL_PERMISSIONS.ATTENDANCE}
+              userTypes={['STAFF']}
+            >
+              <StaffSelfAttendancePage />
             </ProtectedRoute>
           }
         />
