@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Alert, Card, Spinner } from 'react-bootstrap';
 import { FaArrowLeft, FaBus, FaMapMarkerAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
@@ -20,6 +20,7 @@ function StudentBusTrackingPage() {
   const [studentLocation, setStudentLocation] = useState(null);
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState('');
+  const locationWatchRef = useRef(null);
 
   useEffect(() => {
     if (!studentId) {
@@ -84,6 +85,35 @@ function StudentBusTrackingPage() {
     };
   }, [studentId]);
 
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      setRouteError('Location access is not supported on this device.');
+      return undefined;
+    }
+
+    setRouteLoading(true);
+    locationWatchRef.current = navigator.geolocation.watchPosition(
+      ({ coords }) => {
+        setStudentLocation({ lat: coords.latitude, lng: coords.longitude });
+        setRouteError('');
+        setRouteLoading(false);
+      },
+      (positionError) => {
+        setRouteError(positionError.code === 1
+          ? 'Allow location permission to show the blue route to your bus.'
+          : 'Unable to find your current location. Please try again.');
+        setRouteLoading(false);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
+    );
+
+    return () => {
+      if (locationWatchRef.current !== null) {
+        navigator.geolocation.clearWatch(locationWatchRef.current);
+      }
+    };
+  }, []);
+
   const coordinatesAvailable = location?.lat != null && location?.lng != null;
   const embeddedMapUrl = coordinatesAvailable
     ? studentLocation
@@ -134,16 +164,25 @@ function StudentBusTrackingPage() {
                 <span className={`bus-live-status ${connected ? 'connected' : ''}`}>{connected ? 'LIVE' : 'OFFLINE'}</span>
               </div>
               <div className="bus-location-coordinates">
-                <FaMapMarkerAlt />
-                <div><span>Current location</span><strong>{coordinatesAvailable ? `${location.lat}, ${location.lng}` : 'Location unavailable'}</strong></div>
+                <FaBus />
+                <div><span>Bus current location</span><strong>{coordinatesAvailable ? `${location.lat}, ${location.lng}` : 'Location unavailable'}</strong></div>
               </div>
-              {embeddedMapUrl && <div className="bus-live-map"><iframe key={embeddedMapUrl} title="Live bus location" src={embeddedMapUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen /></div>}
+              <div className="bus-location-coordinates student-location-coordinates">
+                <FaMapMarkerAlt />
+                <div><span>Parent / student location</span><strong>{studentLocation ? `${studentLocation.lat.toFixed(6)}, ${studentLocation.lng.toFixed(6)}` : routeLoading ? 'Finding your location…' : 'Location unavailable'}</strong></div>
+              </div>
+              {embeddedMapUrl && (
+                <div className={`bus-live-map ${studentLocation ? 'route-visible' : ''}`}>
+                  <iframe title="Live route from student to bus" src={embeddedMapUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
+                  {studentLocation && <div className="bus-route-live-indicator"><span /><strong>LIVE ROUTE</strong></div>}
+                </div>
+              )}
               {routeError && <p className="bus-route-error">{routeError}</p>}
               {location.updt && <p className="bus-location-updated">Last updated: {new Date(location.updt).toLocaleString()}</p>}
               {coordinatesAvailable && (
                 <button type="button" className="hw-primary-btn bus-map-link" onClick={showRouteToBus} disabled={routeLoading}>
                   {routeLoading ? <Spinner animation="border" size="sm" /> : <FaMapMarkerAlt />}
-                  {studentLocation ? 'Refresh Route to Bus' : 'Show Route to Bus'}
+                  {studentLocation ? 'Refresh My Location' : 'Show Route to Bus'}
                 </button>
               )}
             </Card.Body>

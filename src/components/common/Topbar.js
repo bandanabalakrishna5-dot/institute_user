@@ -33,6 +33,28 @@ import {
 } from '../../services/commonUtills/FormValidations';
 import { fetchInstituteNotificationCount } from '../../services/NotificationServices/notificationServices';
 
+const playNotificationSound = () => {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const context = new AudioContext();
+    const oscillator = context.createOscillator();
+    const gain = context.createGain();
+    oscillator.connect(gain);
+    gain.connect(context.destination);
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(660, context.currentTime);
+    oscillator.frequency.setValueAtTime(880, context.currentTime + 0.12);
+    gain.gain.setValueAtTime(0.0001, context.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.18, context.currentTime + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.32);
+    oscillator.start(context.currentTime);
+    oscillator.stop(context.currentTime + 0.34);
+    oscillator.onended = () => context.close();
+  } catch (error) {
+    // Audio can be blocked until the user interacts with the page.
+  }
+};
 const RoleLabels = {
   STUDENT: 'Student',
   STAFF: 'Staff',
@@ -71,6 +93,7 @@ function Topbar() {
   const [showProfileDrawer, setShowProfileDrawer] = useState(false);
   const [avatarImageFailed, setAvatarImageFailed] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const latestNotificationIdRef = useRef(null);
   const drawerRef = useRef(null);
   const navigate  = useNavigate();
 
@@ -107,13 +130,20 @@ function Topbar() {
         const count = typ === 'STAFF'
           ? response?.payload?.staffCount
           : response?.payload?.classCount;
-        if (active) setNotificationCount(Number(count) || 0);
+        const latestNotificationId = Number(response?.payload?.latestNotificationId) || 0;
+        if (active) {
+          if (latestNotificationIdRef.current !== null && latestNotificationId > latestNotificationIdRef.current) {
+            playNotificationSound();
+          }
+          latestNotificationIdRef.current = latestNotificationId;
+          setNotificationCount(Number(count) || 0);
+        }
       } catch (error) {
         if (active) setNotificationCount(0);
       }
     };
     loadNotificationCount();
-    const notificationPoll = window.setInterval(loadNotificationCount, 10000);
+    const notificationPoll = window.setInterval(loadNotificationCount, 5000);
     return () => {
       active = false;
       window.clearInterval(notificationPoll);

@@ -861,7 +861,6 @@ function Login() {
                   <input type="checkbox" />
                   Remember me
                 </label>
-                <span className="login-forgot" style={{cursor: 'pointer'}} onClick={() => setShowChangePwd(true)}>Forgot Password?</span>
               </div>
 
               <button className="login-btn-primary" onClick={handleSubmit} disabled={isLoading}>

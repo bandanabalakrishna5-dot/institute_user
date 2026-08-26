@@ -14,6 +14,11 @@ const unwrapList = (response) => {
   return [];
 };
 
+const getNotificationSource = (type) => ({
+  STAFF: 'Staff',
+  STUDENT: 'Student',
+  INSTITUTE: 'Institute',
+}[String(type || '').toUpperCase()] || 'Institute');
 function NotificationsPage() {
   const { stateAuth } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -24,12 +29,12 @@ function NotificationsPage() {
   const [error, setError] = useState('');
 
   const loadNotifications = useCallback(async () => {
-    setLoading(true);
     setError('');
     const baseParams = {
       instid: user.instid,
       brcid: user.brcid,
       acdmcyr: user.acdmcyr,
+      usrid: user.usrid,
       typ: userType,
       ...(userType === 'STUDENT' && user.clsnm ? { clsnm: user.clsnm } : {}),
     };
@@ -42,7 +47,7 @@ function NotificationsPage() {
     const combined = successfulResponses.flatMap(({ response }) =>
       unwrapList(response).map((item) => ({
         ...item,
-        notificationSource: String(item.typ || '').toUpperCase() === 'STAFF' ? 'Staff' : 'Institute',
+        notificationSource: getNotificationSource(item.typ),
       })),
     );
     const uniqueNotifications = Array.from(
@@ -57,9 +62,13 @@ function NotificationsPage() {
       setNotifications(uniqueNotifications);
     }
     setLoading(false);
-  }, [user.acdmcyr, user.brcid, user.clsnm, user.instid, userType]);
+  }, [user.acdmcyr, user.brcid, user.clsnm, user.instid, user.usrid, userType]);
 
-  useEffect(() => { loadNotifications(); }, [loadNotifications]);
+  useEffect(() => {
+    loadNotifications();
+    const notificationPoll = window.setInterval(loadNotifications, 5000);
+    return () => window.clearInterval(notificationPoll);
+  }, [loadNotifications]);
 
   return (
     <Layout>
