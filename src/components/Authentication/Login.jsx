@@ -6,6 +6,7 @@ import { FaEye, FaEyeSlash, FaLock, FaUserAlt, FaStar, FaGraduationCap, FaBookOp
 import { BsShield } from 'react-icons/bs';
 import { emailValidation } from '../../services/commonUtills/FormValidations';
 import { AuthContext } from '../../App';
+import InstallAppButton from '../common/InstallAppButton';
 
 const initialState = {
   emlid: '',
@@ -867,6 +868,8 @@ function Login() {
                 <span>{isLoading ? 'Logging In...' : 'Login'}</span>
                 <span className="login-action-arrow">→</span>
               </button>
+
+              <InstallAppButton />
 
               {/* <div className="login-divider"><span>OR</span></div> */}
 

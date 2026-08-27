@@ -1,0 +1,6 @@
+.pwa-install-card { display: grid; gap: 7px; text-align: center; }
+.pwa-install-button { width: 100%; min-height: 48px; padding: 11px 18px; border: 1px solid #315bea; border-radius: 12px; background: #fff; color: #315bea; display: inline-flex; align-items: center; justify-content: center; gap: 9px; font-size: .9rem; font-weight: 800; transition: background .18s ease, color .18s ease, transform .18s ease; }
+.pwa-install-button:hover:not(:disabled) { background: #eef2ff; transform: translateY(-1px); }
+.pwa-install-button:focus-visible { outline: 3px solid rgba(49,91,234,.25); outline-offset: 2px; }
+.pwa-install-button:disabled { border-color: #86c89b; background: #effbf3; color: #238447; cursor: default; }
+.pwa-install-card small { color: #718096; font-size: .7rem; line-height: 1.35; }
