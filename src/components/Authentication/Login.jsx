@@ -646,6 +646,7 @@ function Login() {
             .login-change-password-header .modal-title { font-size: 22px; }
             .login-change-password-body { padding: 20px; }
             .login-container-new {
+              min-height: 100vh;
               min-height: 100dvh;
               overflow-x: hidden;
               overflow-y: auto;
@@ -672,15 +673,16 @@ function Login() {
               opacity: 0.5;
             }
             .login-right-panel-new {
-              justify-content: flex-start;
+              justify-content: center;
+              min-height: 100vh;
               min-height: 100dvh;
-              padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+              padding: max(20px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
             }
             .login-auth-shell {
               width: 100%;
               max-width: 440px;
               min-height: auto;
-              margin: auto 0;
+              margin: 0;
               padding: 32px 24px 26px;
               border-radius: 20px;
               box-shadow: 0 14px 40px rgba(63, 91, 151, 0.14);
@@ -753,6 +755,16 @@ function Login() {
             .login-welcome p { font-size: 16px; }
             .login-input-row { align-items: flex-start; }
             .login-footer-band { margin-top: 26px; }
+          }
+          @media (max-width: 768px) and (min-height: 760px) {
+            .login-auth-shell {
+              padding-block: 38px 32px;
+            }
+            .login-logo-core {
+              width: 112px;
+              height: 112px;
+            }
+            .login-footer-band { margin-top: 38px; }
           }
           @media (max-width: 350px) {
             .login-input-row {
