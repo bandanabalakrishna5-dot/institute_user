@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
-import { Alert, Card, Spinner } from 'react-bootstrap';
-import { FaArrowLeft, FaBus, FaMapMarkerAlt } from 'react-icons/fa';
+import { Alert, Spinner } from 'react-bootstrap';
+import { FaArrowLeft, FaBell, FaBus, FaClock, FaCrosshairs, FaMapMarkerAlt, FaRoute } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../App';
 import {
@@ -182,47 +182,39 @@ function StudentBusTrackingPage() {
 
   return (
     <Layout>
-      <div className="bus-tracking-page">
-        <header className="bus-tracking-header">
-          <button type="button" className="hw-icon-btn" onClick={() => navigate('/dashboard')} aria-label="Go back"><FaArrowLeft /></button>
-          <div><span className="hw-kicker">Student Transport</span><h1>Bus Tracking</h1><p>{connected ? 'Live location connected.' : 'Connecting to live location…'}</p></div>
+      <div className="bus-tracking-page bus-tracking-live-page">
+        <header className="bus-tracking-live-header">
+          <button type="button" onClick={() => navigate('/dashboard')} aria-label="Go back"><FaArrowLeft /></button>
+          <h1>Live Bus Tracking</h1>
+          <button type="button" onClick={() => navigate('/notifications')} aria-label="Notifications"><FaBell /></button>
         </header>
 
-        {error && <Alert variant="warning">{error}</Alert>}
         {loading ? (
-          <div className="bus-tracking-loading"><Spinner animation="border" /><span>Finding your bus…</span></div>
+          <div className="bus-tracking-live-loading"><Spinner animation="border" /><span>Finding your bus…</span></div>
         ) : location ? (
-          <Card className="feed-card bus-location-card">
-            <Card.Body>
-              <div className="bus-location-title">
-                <span className="dashboard-explore-icon cyan"><FaBus /></span>
-                <div><strong>Your assigned bus</strong><div className="text-muted small">{location.frrt || 'Route start'} → {location.tort || 'Route end'}</div></div>
-                <span className={`bus-live-status ${connected ? 'connected' : ''}`}>{connected ? 'LIVE' : 'OFFLINE'}</span>
+          <div className="bus-tracking-map-stage">
+            {embeddedMapUrl ? <iframe title="Live route from your location to the bus" src={embeddedMapUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen /> : <div className="bus-tracking-map-empty"><FaMapMarkerAlt /><span>Bus coordinates are unavailable</span></div>}
+
+            <div className={`bus-tracking-live-pill ${connected ? 'connected' : ''}`}><span /> {connected ? 'LIVE' : 'OFFLINE'}</div>
+
+            {coordinatesAvailable && <button type="button" className="bus-tracking-locate" onClick={showRouteToBus} disabled={routeLoading} aria-label="Refresh my location">{routeLoading ? <Spinner animation="border" size="sm" /> : <FaCrosshairs />}</button>}
+
+            {error && <Alert variant="warning" className="bus-tracking-overlay-alert">{error}</Alert>}
+            {routeError && <Alert variant="warning" className="bus-tracking-overlay-alert route-error">{routeError}</Alert>}
+
+            <section className="bus-tracking-info-card">
+              <div className="bus-tracking-vehicle-avatar">
+                {location.vhlurl ? <img src={location.vhlurl} alt="Assigned bus" /> : <FaBus />}
               </div>
-              <div className="bus-location-coordinates">
-                <FaBus />
-                <div><span>Bus current location</span><strong>{coordinatesAvailable ? `${location.lat}, ${location.lng}` : 'Location unavailable'}</strong></div>
+              <div className="bus-tracking-info-copy">
+                <div><FaBus /><span>Bus No:</span><strong>{location.vhlno || 'Assigned vehicle'}</strong></div>
+                {location.drvnm && <div><span className="bus-tracking-person">●</span><span>Driver:</span><strong>{location.drvnm}</strong></div>}
+                <div><FaRoute /><span>Route:</span><strong>{location.frrt || 'Start'} → {location.tort || 'Destination'}</strong></div>
+                <div className="bus-tracking-arrival"><FaClock /><strong>{connected ? 'Live location connected' : 'Waiting for live updates'}</strong></div>
               </div>
-              <div className="bus-location-coordinates student-location-coordinates">
-                <FaMapMarkerAlt />
-                <div><span>Parent / student location</span><strong>{studentLocation ? `${studentLocation.lat.toFixed(6)}, ${studentLocation.lng.toFixed(6)}` : routeLoading ? 'Finding your location…' : 'Location unavailable'}</strong></div>
-              </div>
-              {embeddedMapUrl && (
-                <div className={`bus-live-map ${studentLocation ? 'route-visible' : ''}`}>
-                  <iframe title="Live route from student to bus" src={embeddedMapUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen />
-                  {studentLocation && <div className="bus-route-live-indicator"><span /><strong>LIVE ROUTE</strong></div>}
-                </div>
-              )}
-              {routeError && <p className="bus-route-error">{routeError}</p>}
-              {location.updt && <p className="bus-location-updated">Last updated: {new Date(location.updt).toLocaleString()}</p>}
-              {coordinatesAvailable && (
-                <button type="button" className="hw-primary-btn bus-map-link" onClick={showRouteToBus} disabled={routeLoading}>
-                  {routeLoading ? <Spinner animation="border" size="sm" /> : <FaMapMarkerAlt />}
-                  {studentLocation ? 'Refresh My Location' : 'Show Route to Bus'}
-                </button>
-              )}
-            </Card.Body>
-          </Card>
+              {location.updt && <small className="bus-tracking-updated">Updated {new Date(location.updt).toLocaleString()}</small>}
+            </section>
+          </div>
         ) : null}
       </div>
     </Layout>
