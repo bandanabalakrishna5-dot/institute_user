@@ -72,6 +72,12 @@ a {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
+.user-topbar-identity { min-width: 0; }
+.user-topbar-school-copy { min-width: 0; max-width: 280px; display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15; text-align: left; }
+.user-topbar-school-copy strong,.user-topbar-school-copy small { display: block; width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-topbar-school-copy strong { color: #172554; font-size: .82rem; font-weight: 850; }
+.user-topbar-school-copy small { margin-top: 3px; color: #64748b; font-size: .66rem; font-weight: 700; }
+
 .topbar-icon-btn, .theme-toggle-btn {
   background: transparent;
   border: none;
@@ -1996,14 +2002,17 @@ textarea.form-control {
 .tt-page { max-width: 920px; margin: 0 auto; padding: 24px 20px 110px; }
 .tt-header { display: grid; grid-template-columns: auto 1fr auto; align-items: start; gap: 14px; margin-bottom: 24px; }.tt-header h1 { margin: 3px 0 4px; color: #121c35; font-size: clamp(1.6rem,5vw,2.2rem); font-weight: 800; }.tt-header p { margin: 0; color: #687890; }.tt-refresh { margin-left: auto; }
 .tt-period-list { display: grid; gap: 10px; }.tt-period-card { width: 100%; padding: 14px; border: 1px solid #dfe6f0; border-radius: 16px; background: #fff; display: grid; grid-template-columns: 42px 1fr auto; align-items: center; gap: 13px; text-align: left; box-shadow: 0 4px 14px rgba(15,23,42,.04); transition: .16s ease; }.tt-period-card:hover,.tt-period-card.active { border-color: #6b75ee; background: #f8f8ff; transform: translateY(-1px); }.tt-period-number { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: #fff; background: linear-gradient(135deg,#315bea,#7c3aed); font-weight: 800; }.tt-period-main { display: flex; flex-direction: column; gap: 5px; }.tt-period-main strong { color: #172033; }.tt-period-main small,.tt-period-time { color: #6a7a92; font-size: .78rem; }.tt-period-main small svg,.tt-period-time svg { margin-right: 5px; color: #4f65d9; }
+.tt-period-topic { margin-top: 3px; color: #26345a; font-size: .78rem; font-weight: 750; line-height: 1.35; }.tt-period-topic svg,.tt-period-topic-date svg { margin-right: 5px; color: #604cea; }.tt-period-topic-date { color: #718198 !important; font-size: .7rem !important; }.tt-period-side { display: flex; flex-direction: column; align-items: flex-end; gap: 9px; }.tt-period-status { padding: 4px 9px; border-radius: 999px; font-size: .66rem; font-weight: 850; }.tt-period-status.pending { background: #fff4d6; color: #a15c00; }.tt-period-status.complete { background: #dcfce7; color: #137a3a; }
 .tt-empty { min-height: 240px; border: 1px dashed #ccd6e5; border-radius: 18px; display: grid; place-items: center; align-content: center; gap: 10px; color: #718198; text-align: center; }.tt-empty > svg { font-size: 2.4rem; color: #8495ad; }.tt-empty h2,.tt-empty p { margin: 0; }
 .tt-topic-panel { margin-top: 22px; padding: 20px; border: 1px solid #dfe6f0; border-radius: 18px; background: #fff; }.tt-topic-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }.tt-topic-head h2 { margin: 3px 0 0; font-size: 1.15rem; color: #172033; }.tt-topic-card { position: relative; padding: 16px; border-radius: 14px; background: #f7f9fd; }.tt-topic-card h3 { margin: 9px 0 6px; font-size: 1rem; color: #1b2840; }.tt-topic-card h3 svg { color: #604cea; margin-right: 6px; }.tt-topic-card p,.tt-topic-card small { margin: 0; color: #687890; font-size: .8rem; }.tt-topic-tag { padding: 4px 8px; border-radius: 999px; background: #dcfce7; color: #168044; font-size: .68rem; font-weight: 800; text-transform: uppercase; }.tt-topic-tag.urgent { background: #fee2e2; color: #dc2626; }.tt-topic-loading,.tt-no-topic { padding: 22px; text-align: center; color: #718198; }
 .tt-topic-footer { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }.tt-status-control { display: flex; align-items: center; gap: 6px; color: #687890; font-size: .68rem; font-weight: 700; }.tt-status-label { color: #66768e; }.tt-status-toggle { display: inline-flex; padding: 2px; border: 1px solid #dbe3ef; border-radius: 8px; background: #fff; box-shadow: 0 2px 6px rgba(15,23,42,.04); }.tt-status-toggle button { min-width: 58px; border: 0; border-radius: 6px; padding: 4px 7px; background: transparent; color: #708097; font-size: .65rem; line-height: 1.2; font-weight: 800; transition: background .15s ease,color .15s ease,box-shadow .15s ease; }.tt-status-toggle button:not(:disabled):hover { background: #f1f5f9; color: #334155; }.tt-status-toggle button.active.pending { background: #fff4d6; color: #a15c00; box-shadow: 0 1px 4px rgba(161,92,0,.12); }.tt-status-toggle button.active.complete { background: #dcfce7; color: #137a3a; box-shadow: 0 1px 4px rgba(19,122,58,.12); }.tt-status-toggle button:disabled { cursor: default; }.tt-status-control .spinner-border { width: .7rem; height: .7rem; color: #5b64e8; }
-@media(max-width:600px){.tt-page{padding:18px 16px 100px}.tt-header{grid-template-columns:auto 1fr}.tt-refresh{display:none}.tt-period-card{grid-template-columns:42px 1fr}.tt-period-time{grid-column:2}.tt-topic-footer{align-items:flex-start;flex-direction:column}}
+@media(max-width:600px){.tt-page{padding:18px 16px 100px}.tt-header{grid-template-columns:auto 1fr}.tt-refresh{display:none}.tt-period-card{grid-template-columns:42px 1fr}.tt-period-side{grid-column:2;align-items:flex-start;flex-direction:row;justify-content:space-between}.tt-topic-footer{align-items:flex-start;flex-direction:column}}
 
 /* Compact student/staff portal sizing on mobile and tablet. */
 @media (max-width: 768px) {
   .user-topbar { height: 58px; padding-inline: 14px; }
+  .user-topbar-identity { min-width: 0; max-width: calc(100% - 92px); }
+  .user-topbar-school-copy { max-width: min(58vw, 230px); }
   .user-profile-avatar { width: 34px; height: 34px; font-size: 12px; }
   .user-profile-trigger { gap: 6px; padding: 3px 6px; }
   .user-portal-content { padding-bottom: 68px; }

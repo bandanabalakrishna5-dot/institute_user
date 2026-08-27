@@ -32,6 +32,7 @@ function TimetablePage() {
   const [periods, setPeriods] = useState([]);
   const [selectedPeriod, setSelectedPeriod] = useState(null);
   const [topicDetails, setTopicDetails] = useState([]);
+  const [periodTopics, setPeriodTopics] = useState({});
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState('');
@@ -47,8 +48,19 @@ function TimetablePage() {
     setError('');
     const response = await fetchStaffDailyTimetable(getParams(user));
     setLoading(false);
-    if (response?.status === 'success') setPeriods(uniqueTimetablePeriods(response.payload || []));
-    else setError(response?.error?.message || 'Unable to load today’s timetable.');
+    if (response?.status === 'success') {
+      const timetablePeriods = uniqueTimetablePeriods(response.payload || []);
+      setPeriods(timetablePeriods);
+      const topicResponses = await Promise.all(timetablePeriods.map(async (period) => {
+        if (!period.clsprid) return [period.clsprid, []];
+        const topicResponse = await fetchStaffPeriodTopicDetails({
+          ...getParams(user),
+          clsprid: period.clsprid,
+        });
+        return [period.clsprid, topicResponse?.status === 'success' ? topicResponse.payload || [] : []];
+      }));
+      setPeriodTopics(Object.fromEntries(topicResponses));
+    } else setError(response?.error?.message || 'Unable to load today’s timetable.');
   };
 
   useEffect(() => { loadTimetable(); }, [user.stfid, user.instid, user.brcid, user.acdmcyr]);
@@ -76,6 +88,12 @@ function TimetablePage() {
       setTopicDetails((current) => current.map((item) => (
         item.subsydetlid === detail.subsydetlid ? { ...item, status } : item
       )));
+      setPeriodTopics((current) => ({
+        ...current,
+        [selectedPeriod?.clsprid]: (current[selectedPeriod?.clsprid] || []).map((item) => (
+          item.subsydetlid === detail.subsydetlid ? { ...item, status } : item
+        )),
+      }));
     } else {
       setError(response?.error?.message || response?.errors?.[0]?.errorMessage || 'Unable to update topic status.');
     }
@@ -92,13 +110,25 @@ function TimetablePage() {
         {error && <Alert variant="danger">{error}</Alert>}
         {loading ? <div className="tt-empty"><Spinner animation="border" /><p>Loading today’s classes...</p></div> : periods.length === 0 ? <div className="tt-empty"><FaCalendarDay /><h2>No classes today</h2><p>Your timetable is clear for today.</p></div> : (
           <div className="tt-period-list">
-            {periods.map((period, index) => (
-              <button type="button" className={`tt-period-card ${selectedPeriod?.clsprid === period.clsprid ? 'active' : ''}`} key={period.clsprid || index} onClick={() => openPeriod(period)}>
-                <span className="tt-period-number">{period.prd ?? index + 1}</span>
-                <span className="tt-period-main"><strong>{period.subnm || period.subcd || 'Subject'}</strong><small><FaChalkboardTeacher /> {period.clsnm || 'Class'}{period.secnm ? ` · ${period.secnm}` : ''}</small></span>
-                <span className="tt-period-time"><FaClock /> {formatPeriodLabel(period, index)}</span>
-              </button>
-            ))}
+            {periods.map((period, index) => {
+              const periodTopic = (periodTopics[period.clsprid] || [])[0];
+              const topicStatus = normalizedTopicStatus(periodTopic?.status);
+              return (
+                <button type="button" className={`tt-period-card ${selectedPeriod?.clsprid === period.clsprid ? 'active' : ''}`} key={period.clsprid || index} onClick={() => openPeriod(period)}>
+                  <span className="tt-period-number">{period.prd ?? index + 1}</span>
+                  <span className="tt-period-main">
+                    <strong>{period.subnm || period.subcd || 'Subject'}</strong>
+                    <small><FaChalkboardTeacher /> {period.clsnm || 'Class'}{period.secnm ? ` · ${period.secnm}` : ''}</small>
+                    {periodTopic && <span className="tt-period-topic"><FaBookOpen /> {periodTopic.topic || 'Topic not added'}</span>}
+                    {periodTopic && <small className="tt-period-topic-date"><FaCalendarDay /> {displayDate(periodTopic.frmdt)} — {displayDate(periodTopic.todt)}</small>}
+                  </span>
+                  <span className="tt-period-side">
+                    <span className="tt-period-time"><FaClock /> {formatPeriodLabel(period, index)}</span>
+                    {periodTopic && <span className={`tt-period-status ${topicStatus.toLowerCase()}`}>{topicStatus}</span>}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         )}
 

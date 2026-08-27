@@ -106,6 +106,7 @@ function Topbar() {
   const roleLabel   = RoleLabels[typ] || user.typ || '';
   const cds         = user.cds || '';
   const instituteName = user.instnm || 'Institute';
+  const branchName = user.brcnm || user.brnchnm || user.branchName || user.bracnm || 'Branch';
   const profileImageUrl = ['STAFF', 'STUDENT'].includes(typ)
     ? String(user.pturl || '').trim()
     : '';
@@ -197,6 +198,8 @@ function Topbar() {
       {/* Left: Logo / Home */}
       <button
         onClick={() => navigate('/dashboard')}
+        className="user-topbar-identity"
+        title={`${instituteName} - ${branchName}`}
         style={{
           background: 'none', border: 'none', cursor: 'pointer',
           display: 'flex', alignItems: 'center', gap: 8, padding: '4px 8px',
@@ -211,19 +214,9 @@ function Topbar() {
         }}>
           I
         </div>
-        <span
-          title={instituteName}
-          style={{
-            maxWidth: 150,
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
-            fontWeight: 800,
-            fontSize: 14,
-            color: 'var(--text, #0f172a)',
-          }}
-        >
-          {instituteName}
+        <span className="user-topbar-school-copy">
+          <strong>{instituteName}</strong>
+          <small>{branchName}</small>
         </span>
       </button>
 
