@@ -1,13 +1,12 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Alert, Spinner } from 'react-bootstrap';
-import { FaArrowLeft, FaBell, FaBus, FaClock, FaCrosshairs, FaMapMarkerAlt, FaRoute } from 'react-icons/fa';
+import { FaArrowLeft, FaBell, FaBus, FaClock, FaCrosshairs, FaMapMarkerAlt, FaPhoneAlt, FaUser } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../App';
 import {
   createBusTrackingSocket,
   fetchStudentBusLocation,
 } from '../../services/TransportServices/transportServices';
-import Layout from '../common/Layout';
 
 function StudentBusTrackingPage() {
   const { stateAuth } = useContext(AuthContext);
@@ -144,10 +143,14 @@ function StudentBusTrackingPage() {
   }, []);
 
   const coordinatesAvailable = location?.lat != null && location?.lng != null;
+  const driverPhone = location?.drvph || location?.drvmbl || location?.mbleno || '';
+  const arrivalText = location?.eta != null
+    ? `Arriving in ${location.eta} minute${Number(location.eta) === 1 ? '' : 's'}`
+    : connected ? 'Bus is on the way' : 'Waiting for live updates';
   const embeddedMapUrl = mapSnapshot?.bus
     ? mapSnapshot.student
-      ? `https://maps.google.com/maps?saddr=${encodeURIComponent(mapSnapshot.student.lat)},${encodeURIComponent(mapSnapshot.student.lng)}&daddr=${encodeURIComponent(mapSnapshot.bus.lat)},${encodeURIComponent(mapSnapshot.bus.lng)}&dirflg=d&t=h&z=17&output=embed`
-      : `https://maps.google.com/maps?q=${encodeURIComponent(mapSnapshot.bus.lat)},${encodeURIComponent(mapSnapshot.bus.lng)}&t=h&z=17&output=embed`
+      ? `https://maps.google.com/maps?saddr=${encodeURIComponent(mapSnapshot.student.lat)},${encodeURIComponent(mapSnapshot.student.lng)}&daddr=${encodeURIComponent(mapSnapshot.bus.lat)},${encodeURIComponent(mapSnapshot.bus.lng)}&dirflg=d&t=m&z=15&output=embed`
+      : `https://maps.google.com/maps?q=${encodeURIComponent(mapSnapshot.bus.lat)},${encodeURIComponent(mapSnapshot.bus.lng)}&t=m&z=15&output=embed`
     : '';
 
   const showRouteToBus = () => {
@@ -181,7 +184,7 @@ function StudentBusTrackingPage() {
   };
 
   return (
-    <Layout>
+    <div className="bus-tracking-standalone">
       <div className="bus-tracking-page bus-tracking-live-page">
         <header className="bus-tracking-live-header">
           <button type="button" onClick={() => navigate('/dashboard')} aria-label="Go back"><FaArrowLeft /></button>
@@ -207,17 +210,21 @@ function StudentBusTrackingPage() {
                 {location.vhlurl ? <img src={location.vhlurl} alt="Assigned bus" /> : <FaBus />}
               </div>
               <div className="bus-tracking-info-copy">
-                <div><FaBus /><span>Bus No:</span><strong>{location.vhlno || 'Assigned vehicle'}</strong></div>
-                {location.drvnm && <div><span className="bus-tracking-person">●</span><span>Driver:</span><strong>{location.drvnm}</strong></div>}
-                <div><FaRoute /><span>Route:</span><strong>{location.frrt || 'Start'} → {location.tort || 'Destination'}</strong></div>
-                <div className="bus-tracking-arrival"><FaClock /><strong>{connected ? 'Live location connected' : 'Waiting for live updates'}</strong></div>
+                <div><FaBus /><strong>Bus No: <span>{location.vhlno || 'Assigned vehicle'}</span></strong></div>
+                <div><FaUser /><strong>Driver: <span>{location.drvnm || 'Assigned driver'}</span></strong></div>
+                <div className="bus-tracking-arrival"><FaClock /><strong>{arrivalText}</strong></div>
               </div>
+              {driverPhone ? (
+                <a className="bus-tracking-call" href={`tel:${driverPhone}`} aria-label={`Call ${location.drvnm || 'driver'}`}><FaPhoneAlt /> Call Driver</a>
+              ) : (
+                <button type="button" className="bus-tracking-call" disabled><FaPhoneAlt /> Call Driver</button>
+              )}
               {location.updt && <small className="bus-tracking-updated">Updated {new Date(location.updt).toLocaleString()}</small>}
             </section>
           </div>
         ) : null}
       </div>
-    </Layout>
+    </div>
   );
 }
 
