@@ -20,7 +20,10 @@ function StudentBusTrackingPage() {
   const [studentLocation, setStudentLocation] = useState(null);
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState('');
+  const [mapSnapshot, setMapSnapshot] = useState(null);
   const locationWatchRef = useRef(null);
+  const latestBusLocationRef = useRef(null);
+  const latestStudentLocationRef = useRef(null);
 
   useEffect(() => {
     if (!studentId) {
@@ -114,11 +117,37 @@ function StudentBusTrackingPage() {
     };
   }, []);
 
+  useEffect(() => {
+    latestBusLocationRef.current = location;
+    latestStudentLocationRef.current = studentLocation;
+
+    if (!mapSnapshot && location?.lat != null && location?.lng != null) {
+      setMapSnapshot({
+        bus: { lat: location.lat, lng: location.lng },
+        student: studentLocation,
+      });
+    } else if (mapSnapshot && !mapSnapshot.student && studentLocation) {
+      setMapSnapshot((current) => ({ ...current, student: studentLocation }));
+    }
+  }, [location, studentLocation, mapSnapshot]);
+
+  useEffect(() => {
+    const mapRefreshInterval = window.setInterval(() => {
+      const bus = latestBusLocationRef.current;
+      if (bus?.lat == null || bus?.lng == null) return;
+      setMapSnapshot({
+        bus: { lat: bus.lat, lng: bus.lng },
+        student: latestStudentLocationRef.current,
+      });
+    }, 30000);
+    return () => window.clearInterval(mapRefreshInterval);
+  }, []);
+
   const coordinatesAvailable = location?.lat != null && location?.lng != null;
-  const embeddedMapUrl = coordinatesAvailable
-    ? studentLocation
-      ? `https://maps.google.com/maps?saddr=${encodeURIComponent(studentLocation.lat)},${encodeURIComponent(studentLocation.lng)}&daddr=${encodeURIComponent(location.lat)},${encodeURIComponent(location.lng)}&dirflg=d&t=h&z=17&output=embed`
-      : `https://maps.google.com/maps?q=${encodeURIComponent(location.lat)},${encodeURIComponent(location.lng)}&t=h&z=17&output=embed`
+  const embeddedMapUrl = mapSnapshot?.bus
+    ? mapSnapshot.student
+      ? `https://maps.google.com/maps?saddr=${encodeURIComponent(mapSnapshot.student.lat)},${encodeURIComponent(mapSnapshot.student.lng)}&daddr=${encodeURIComponent(mapSnapshot.bus.lat)},${encodeURIComponent(mapSnapshot.bus.lng)}&dirflg=d&t=h&z=17&output=embed`
+      : `https://maps.google.com/maps?q=${encodeURIComponent(mapSnapshot.bus.lat)},${encodeURIComponent(mapSnapshot.bus.lng)}&t=h&z=17&output=embed`
     : '';
 
   const showRouteToBus = () => {
@@ -131,7 +160,14 @@ function StudentBusTrackingPage() {
     setRouteError('');
     navigator.geolocation.getCurrentPosition(
       ({ coords }) => {
-        setStudentLocation({ lat: coords.latitude, lng: coords.longitude });
+        const refreshedStudentLocation = { lat: coords.latitude, lng: coords.longitude };
+        setStudentLocation(refreshedStudentLocation);
+        if (location?.lat != null && location?.lng != null) {
+          setMapSnapshot({
+            bus: { lat: location.lat, lng: location.lng },
+            student: refreshedStudentLocation,
+          });
+        }
         setRouteLoading(false);
       },
       (positionError) => {
