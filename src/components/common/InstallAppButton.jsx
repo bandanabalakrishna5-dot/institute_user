@@ -1,7 +1,24 @@
 import React, { useEffect, useState } from 'react';
-import { FaDownload, FaCheckCircle } from 'react-icons/fa';
+import { FaDownload } from 'react-icons/fa';
 import './InstallAppButton.css';
-import './InstallAppButton.css';
+
+const INSTALL_STORAGE_KEY = 'institute-app-installed';
+
+const wasInstalled = () => {
+  try {
+    return window.localStorage.getItem(INSTALL_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+};
+
+const rememberInstalled = () => {
+  try {
+    window.localStorage.setItem(INSTALL_STORAGE_KEY, 'true');
+  } catch {
+    // Standalone display detection still hides the control when storage is unavailable.
+  }
+};
 
 const isStandalone = () =>
   window.matchMedia('(display-mode: standalone)').matches ||
@@ -9,19 +26,18 @@ const isStandalone = () =>
 
 function InstallAppButton() {
   const [installPrompt, setInstallPrompt] = useState(null);
-  const [installed, setInstalled] = useState(isStandalone);
-  const [message, setMessage] = useState('Install for faster access from your home screen.');
+  const [installed, setInstalled] = useState(() => isStandalone() || wasInstalled());
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
     const handleInstallPrompt = (event) => {
       event.preventDefault();
-      setInstallPrompt(event);
-      setMessage('Install for faster access from your home screen.');
+      if (!wasInstalled()) setInstallPrompt(event);
     };
     const handleInstalled = () => {
+      rememberInstalled();
       setInstalled(true);
       setInstallPrompt(null);
-      setMessage('The app is installed on this device.');
     };
 
     window.addEventListener('beforeinstallprompt', handleInstallPrompt);
@@ -45,18 +61,21 @@ function InstallAppButton() {
     await installPrompt.prompt();
     const { outcome } = await installPrompt.userChoice;
     setInstallPrompt(null);
-    setMessage(outcome === 'accepted'
-      ? 'App installation started.'
-      : 'You can install later from your browser menu.');
+    if (outcome === 'accepted') {
+      rememberInstalled();
+      setInstalled(true);
+    }
   };
+
+  if (installed) return null;
 
   return (
     <div className="pwa-install-card">
-      <button type="button" className="pwa-install-button" onClick={handleInstall} disabled={installed}>
-        {installed ? <FaCheckCircle aria-hidden="true" /> : <FaDownload aria-hidden="true" />}
-        <span>{installed ? 'App Installed' : 'Install App'}</span>
+      <button type="button" className="pwa-install-button" onClick={handleInstall}>
+        <FaDownload aria-hidden="true" />
+        <span>Install App</span>
       </button>
-      <small aria-live="polite">{message}</small>
+      {message && <small aria-live="polite">{message}</small>}
     </div>
   );
 }
