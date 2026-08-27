@@ -12,6 +12,7 @@ import {
   FaGraduationCap,
   FaUserCircle,
   FaClock,
+  FaStickyNote,
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -74,7 +75,7 @@ function StudentDashboard({ user }) {
       ...USER_PORTAL_PERMISSIONS.STUDENT_MARKS_ACCESS,
     ]) && { label: 'Exam & Results', icon: <FaGraduationCap />, color: 'rose' },
     hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.STUDY_MATERIALS) && {
-      label: 'Study Materials', icon: <FaBookOpen />, color: 'indigo',
+      label: 'Notes', path: '/notes', icon: <FaStickyNote />, color: 'indigo',
     },
     hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.ANNOUNCEMENTS) && {
       label: 'Announcements', icon: <FaBullhorn />, color: 'yellow',

@@ -15,6 +15,7 @@ import {
   FaUserCheck,
   FaCalendarAlt,
   FaTasks,
+  FaStickyNote,
 } from 'react-icons/fa';
 import {
   fetchStaffDailyTimetable,
@@ -114,6 +115,12 @@ function StaffDashboard({ user }) {
       label: 'Homework',
       path: '/homework',
       icon: <FaBookOpen />,
+      color: 'violet',
+    },
+    hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.STUDY_MATERIALS) && {
+      label: 'Notes',
+      path: '/notes',
+      icon: <FaStickyNote />,
       color: 'violet',
     },
     hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.HOMEWORK_ACCESS) && {

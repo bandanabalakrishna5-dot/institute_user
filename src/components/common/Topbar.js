@@ -24,6 +24,7 @@ import {
   FaUsers,
   FaDollarSign,
   FaChevronRight,
+  FaStickyNote,
 } from 'react-icons/fa';
 import { AuthContext } from '../../App';
 import {
@@ -65,6 +66,7 @@ const STUDENT_MENU = [
   { label: 'My Profile',    icon: <FaUserGraduate />,    path: '/profile',       color: '#eff6ff', iconColor: '#2f54eb', perm: USER_PORTAL_PERMISSIONS.PROFILE },
   { label: 'Timetable',     icon: <FaCalendarAlt />,     path: '/timetable',     color: '#fdf4ff', iconColor: '#9333ea', perm: USER_PORTAL_PERMISSIONS.TIMETABLE },
   { label: 'Homework',      icon: <FaBookOpen />,        path: '/homework',      color: '#f0fdf4', iconColor: '#16a34a', perm: USER_PORTAL_PERMISSIONS.HOMEWORK_ACCESS },
+  { label: 'Notes',         icon: <FaStickyNote />,      path: '/notes',         color: '#f5f3ff', iconColor: '#7c3aed', perm: USER_PORTAL_PERMISSIONS.STUDY_MATERIALS },
   { label: 'Fees',          icon: <FaMoneyBillWave />,   path: '/fees',          color: '#fef9c3', iconColor: '#ca8a04', perm: USER_PORTAL_PERMISSIONS.FEES },
   { label: 'Transport',     icon: <FaBus />,             path: '/transport',     color: '#ecfdf5', iconColor: '#059669', perm: USER_PORTAL_PERMISSIONS.TRANSPORT },
   { label: 'Results',       icon: <FaFileAlt />,         path: '/results',       color: '#e0f2fe', iconColor: '#0369a1', perm: USER_PORTAL_PERMISSIONS.RESULTS },
@@ -77,6 +79,7 @@ const STAFF_MENU = [
   { label: 'Students',      icon: <FaUsers />,             path: '/students',       color: '#f0fdf4', iconColor: '#16a34a', perm: USER_PORTAL_PERMISSIONS.STUDENTS },
   { label: 'Attendance',    icon: <FaClipboardList />,     path: '/attendance',     color: '#fff7ed', iconColor: '#ea580c', perm: USER_PORTAL_PERMISSIONS.ATTENDANCE },
   { label: 'Homework',      icon: <FaBookOpen />,          path: '/homework',       color: '#ecfdf5', iconColor: '#059669', perm: USER_PORTAL_PERMISSIONS.HOMEWORK_ACCESS },
+  { label: 'Notes',         icon: <FaStickyNote />,        path: '/notes',          color: '#f5f3ff', iconColor: '#7c3aed', perm: USER_PORTAL_PERMISSIONS.STUDY_MATERIALS },
   { label: 'Exam Marks',    icon: <FaClipboardList />,      path: '/exam-marks',     color: '#eff6ff', iconColor: '#2563eb', perm: USER_PORTAL_PERMISSIONS.STUDENT_MARKS_ACCESS },
   { label: 'Salary',        icon: <FaDollarSign />,        path: '/salary',         color: '#fef9c3', iconColor: '#ca8a04', perm: USER_PORTAL_PERMISSIONS.SALARY },
   { label: 'Leave',         icon: <FaFileAlt />,           path: '/leave',          color: '#e0f2fe', iconColor: '#0369a1', perm: USER_PORTAL_PERMISSIONS.LEAVE },
