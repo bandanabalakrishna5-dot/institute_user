@@ -89,6 +89,12 @@ function StudentDashboard({ user }) {
     hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.PROFILE) && {
       label: 'Profile', path: '/profile', icon: <FaUserCircle />, color: 'rose',
     },
+    hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.SCHOOL_CALENDAR) && {
+      label: 'Holidays',
+      path: '/holidays',
+      icon: <FaCalendarAlt />,
+      color: 'orange',
+    },
   ].filter(Boolean);
 
   return (
@@ -121,8 +127,8 @@ function StudentDashboard({ user }) {
           <div className="dashboard-explore">
             <h6 className="feed-title">Explore</h6>
             <div className="dashboard-explore-grid">
-              {exploreItems.map((item) => item.path ? (
-                <button type="button" className="dashboard-explore-item" key={item.path} onClick={() => navigate(item.path)}>
+              {exploreItems.map((item) => item.path || item.action ? (
+                <button type="button" className="dashboard-explore-item" key={item.path || item.label} onClick={() => item.action ? item.action() : navigate(item.path)}>
                   <span className={`dashboard-explore-icon ${item.color}`}>{item.icon}</span>
                   <span>{item.label}</span>
                 </button>

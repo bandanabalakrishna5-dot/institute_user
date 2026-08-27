@@ -12,7 +12,6 @@ const StaffLabels = {
   stfrolid: 'Roll ID',
   dob: 'Date of Birth',
   bldgrp: 'Blood Group',
-  ctno: 'Mobile',
 };
 
 function StaffProfile() {

@@ -117,6 +117,8 @@ a {
 }
 
 .topbar-icon-btn { position: relative; }
+.notification-bell-btn { color: #111827; }
+.notification-bell-btn:hover { color: #000; }
 .topbar-notification-count { position: absolute; top: -4px; right: -5px; min-width: 16px; height: 16px; padding: 0 4px; border: 2px solid #fff; border-radius: 999px; background: #ef4444; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: .5rem; line-height: 1; font-weight: 900; }
 
 .user-profile-trigger {
@@ -1971,6 +1973,17 @@ textarea.form-control {
 .staff-event-details small { color: #ea580c; display: inline-flex; align-items: center; gap: 5px; font-size: .68rem; font-weight: 700; }
 .staff-event-details p { margin: 2px 0 0; color: #64748b; font-size: .75rem; line-height: 1.45; white-space: normal; overflow-wrap: anywhere; }
 .staff-events-empty { min-height: 76px; color: #7a889d; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: .78rem; }
+.upcoming-holidays-heading { margin-top: 2px; }
+.upcoming-holidays-card { overflow: hidden; border: 1px solid #e0e7f1; border-radius: 18px; box-shadow: 0 9px 24px rgba(15,23,42,.06); }
+.upcoming-holidays-card .card-body { padding: 8px; }
+.upcoming-holidays-list { display: grid; gap: 7px; }
+.upcoming-holiday-row { min-height: 68px; padding: 11px 12px; border: 1px solid #fde7d1; border-radius: 14px; background: linear-gradient(135deg,#fffaf5,#fff7ed); display: flex; align-items: center; gap: 12px; }
+.upcoming-holiday-icon { width: 40px; height: 40px; flex: 0 0 40px; border-radius: 12px; background: #ffedd5; color: #ea580c; display: grid; place-items: center; }
+.upcoming-holiday-copy { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.upcoming-holiday-copy strong { color: #172033; font-size: .86rem; font-weight: 850; overflow-wrap: anywhere; }
+.upcoming-holiday-copy small { color: #c2410c; font-size: .7rem; font-weight: 750; }
+.upcoming-holidays-empty { min-height: 76px; color: #7a889d; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: .78rem; }
+.holidays-page { width: 100%; max-width: 720px; padding-bottom: 100px !important; }
 .student-welcome-banner { background: linear-gradient(135deg,#eef7ff 0%,#f5f4ff 100%); }
 .student-welcome-banner::after { background: linear-gradient(135deg,rgba(14,165,233,.14),rgba(99,102,241,.09)); }
 .student-classes-card .card-body { padding: 8px; }

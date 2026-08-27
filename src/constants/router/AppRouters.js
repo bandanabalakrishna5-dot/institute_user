@@ -17,6 +17,7 @@ import StudentMarksPage from '../../components/StudentMarks/StudentMarksPage';
 import StudentFeeDetails from '../../components/FeeDetails/StudentFeeDetails';
 import NotificationsPage from '../../components/Notifications/NotificationsPage';
 import StudentBusTrackingPage from '../../components/Transport/StudentBusTrackingPage';
+import HolidaysPage from '../../components/Holidays/HolidaysPage';
 import { ClassesPlaceholder, StudentsPlaceholder } from '../../components/Placeholder/index';
 import { USER_PORTAL_PERMISSIONS } from '../../services/commonUtills/FormValidations';
 
@@ -168,6 +169,17 @@ export const AppRouters = () => {
           element={
             <ProtectedRoute userTypes={['STUDENT']}>
               <StudentBusTrackingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/holidays"
+          element={
+            <ProtectedRoute
+              permissionCodes={USER_PORTAL_PERMISSIONS.SCHOOL_CALENDAR}
+              userTypes={['STUDENT', 'STAFF']}
+            >
+              <HolidaysPage />
             </ProtectedRoute>
           }
         />

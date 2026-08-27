@@ -158,6 +158,12 @@ function StaffDashboard({ user }) {
       icon: <FaUserCircle />,
       color: 'rose',
     },
+    hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.SCHOOL_CALENDAR) && {
+      label: 'Holidays',
+      path: '/holidays',
+      icon: <FaCalendarAlt />,
+      color: 'orange',
+    },
   ].filter(Boolean);
 
   return (
@@ -205,8 +211,8 @@ function StaffDashboard({ user }) {
               <button
                 type="button"
                 className="dashboard-explore-item"
-                key={item.path}
-                onClick={() => navigate(item.path)}
+                key={item.path || item.label}
+                onClick={() => item.action ? item.action() : navigate(item.path)}
               >
                 <span className={`dashboard-explore-icon ${item.color}`}>
                   {item.icon}

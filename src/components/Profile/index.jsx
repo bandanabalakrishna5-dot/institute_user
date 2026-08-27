@@ -15,8 +15,6 @@ const StudentLabels = {
   bdgrp: 'Blood Group',
   ftrnm: 'Father Name',
   mtrnm: 'Mother Name',
-  ctnum: 'Contact Number',
-  alctnum: 'Alternate Contact',
 };
 
 function Profile() {

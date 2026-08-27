@@ -12,7 +12,6 @@ import {
   FaChevronDown,
   FaIdCard,
   FaCalendarAlt,
-  FaPhoneAlt,
   FaTimes,
   FaBell,
   FaUserGraduate,
@@ -101,7 +100,6 @@ function Topbar() {
   const displayName = user.stdnm || user.stfnm || user.drvnm || 'User';
   const roleId      = user.stdrolid || user.stfrolid || user.drvid || '';
   const academicYear= user.acdmcyr || '';
-  const mobileNo    = user.mbleno   || '';
   const typ         = String(user.typ || '').toUpperCase();
   const roleLabel   = RoleLabels[typ] || user.typ || '';
   const cds         = user.cds || '';
@@ -110,6 +108,7 @@ function Topbar() {
   const profileImageUrl = ['STAFF', 'STUDENT'].includes(typ)
     ? String(user.pturl || '').trim()
     : '';
+  const notificationSeenKey = `portal-notifications-seen:${typ}:${user.usrid || 'unknown'}`;
 
   useEffect(() => {
     setAvatarImageFailed(false);
@@ -133,11 +132,12 @@ function Topbar() {
           : response?.payload?.classCount;
         const latestNotificationId = Number(response?.payload?.latestNotificationId) || 0;
         if (active) {
+          const lastSeenNotificationId = Number(localStorage.getItem(notificationSeenKey)) || 0;
           if (latestNotificationIdRef.current !== null && latestNotificationId > latestNotificationIdRef.current) {
             playNotificationSound();
           }
           latestNotificationIdRef.current = latestNotificationId;
-          setNotificationCount(Number(count) || 0);
+          setNotificationCount(latestNotificationId > lastSeenNotificationId ? Number(count) || 0 : 0);
         }
       } catch (error) {
         if (active) setNotificationCount(0);
@@ -149,7 +149,16 @@ function Topbar() {
       active = false;
       window.clearInterval(notificationPoll);
     };
-  }, [typ, user.acdmcyr, user.brcid, user.clsnm, user.instid, user.usrid]);
+  }, [notificationSeenKey, typ, user.acdmcyr, user.brcid, user.clsnm, user.instid, user.usrid]);
+
+  const openNotifications = () => {
+    if (latestNotificationIdRef.current) {
+      localStorage.setItem(notificationSeenKey, String(latestNotificationIdRef.current));
+    }
+    setNotificationCount(0);
+    setShowProfileDrawer(false);
+    navigate('/notifications');
+  };
 
   const getInitials = () => {
     if (!displayName || displayName === 'User') return 'US';
@@ -225,9 +234,9 @@ function Topbar() {
 
         {/* Notification bell */}
         <button
-          className="topbar-icon-btn"
+          className="topbar-icon-btn notification-bell-btn"
           aria-label="Notifications"
-          onClick={() => { setShowProfileDrawer(false); navigate('/notifications'); }}
+          onClick={openNotifications}
         >
           <FaBell size={15} />
           {notificationCount > 0 && <span className="topbar-notification-count">{notificationCount > 99 ? '99+' : notificationCount}</span>}
@@ -320,10 +329,6 @@ function Topbar() {
                     <div className="user-profile-row">
                       <span><FaCalendarAlt /> Academic Year</span>
                       <strong>{academicYear || '—'}</strong>
-                    </div>
-                    <div className="user-profile-row">
-                      <span><FaPhoneAlt /> Mobile No</span>
-                      <strong>{mobileNo || '—'}</strong>
                     </div>
                   </div>
 
