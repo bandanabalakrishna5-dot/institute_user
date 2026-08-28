@@ -1,0 +1,79 @@
+.bus-tracking-location-status {
+  position: absolute;
+  z-index: 2;
+  top: 68px;
+  left: 18px;
+  width: min(270px, calc(100% - 92px));
+  padding: 10px 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 15px;
+  background: rgba(255, 255, 255, .96);
+  display: grid;
+  gap: 9px;
+  box-shadow: 0 8px 22px rgba(30, 64, 175, .16);
+}
+
+.bus-tracking-location-item {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  align-items: center;
+  gap: 9px;
+  color: #0867df;
+}
+
+.bus-tracking-location-item + .bus-tracking-location-item {
+  padding-top: 9px;
+  border-top: 1px solid #dbeafe;
+}
+
+.bus-tracking-blue-marker {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  color: #fff;
+  background: #0867df;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 0 5px rgba(8, 103, 223, .14);
+}
+
+.bus-tracking-location-item small,
+.bus-tracking-location-item strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bus-tracking-location-item small {
+  color: #2563eb;
+  font-size: .55rem;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+.bus-tracking-location-item strong {
+  margin-top: 2px;
+  color: #1e3a8a;
+  font-size: .69rem;
+  font-weight: 750;
+}
+
+.bus-tracking-location-item.is-waiting .bus-tracking-blue-marker {
+  animation: bus-location-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes bus-location-pulse {
+  50% {
+    box-shadow: 0 0 0 9px rgba(8, 103, 223, .06);
+    opacity: .72;
+  }
+}
+
+@media (max-width: 380px) {
+  .bus-tracking-location-status {
+    left: 12px;
+    width: calc(100% - 82px);
+  }
+}

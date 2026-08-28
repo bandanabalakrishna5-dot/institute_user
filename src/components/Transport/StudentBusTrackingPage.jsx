@@ -1,12 +1,13 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Alert, Spinner } from 'react-bootstrap';
-import { FaArrowLeft, FaBell, FaBus, FaClock, FaCrosshairs, FaMapMarkerAlt, FaUser } from 'react-icons/fa';
+import { FaArrowLeft, FaBell, FaBus, FaClock, FaCrosshairs, FaMapMarkerAlt, FaSchool, FaUser } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../App';
 import {
   createBusTrackingSocket,
   fetchStudentBusLocation,
 } from '../../services/TransportServices/transportServices';
+import './StudentBusTrackingPage.css';
 
 function StudentBusTrackingPage() {
   const { stateAuth } = useContext(AuthContext);
@@ -144,6 +145,10 @@ function StudentBusTrackingPage() {
   }, []);
 
   const coordinatesAvailable = location?.lat != null && location?.lng != null;
+  const formatCoordinate = (value) => {
+    const coordinate = Number(value);
+    return Number.isFinite(coordinate) ? coordinate.toFixed(5) : '--';
+  };
   const schoolLatitude = Number(user.latitude);
   const schoolLongitude = Number(user.longitude);
   const schoolLocation = String(user.latitude ?? '').trim() !== ''
@@ -213,6 +218,23 @@ function StudentBusTrackingPage() {
             {embeddedMapUrl ? <iframe title="Live route connecting the student, bus, and school" src={embeddedMapUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen /> : <div className="bus-tracking-map-empty"><FaMapMarkerAlt /><span>Bus coordinates are unavailable</span></div>}
 
             <div className={`bus-tracking-live-pill ${connected ? 'connected' : ''}`}><span /> {connected ? 'LIVE' : 'OFFLINE'}</div>
+
+            <div className="bus-tracking-location-status" aria-label="Student, bus, and school locations">
+              <div className={`bus-tracking-location-item ${studentLocation ? '' : 'is-waiting'}`}>
+                <span className="bus-tracking-blue-marker"><FaUser /></span>
+                <span><small>MY PRESENT LOCATION</small><strong>{studentLocation ? `${formatCoordinate(studentLocation.lat)}, ${formatCoordinate(studentLocation.lng)}` : 'Fetching current location…'}</strong></span>
+              </div>
+              <span aria-hidden="true" style={{ width: 3, height: 13, margin: '-7px 0 -7px 16px', borderRadius: 999, background: '#0867df' }} />
+              <div className="bus-tracking-location-item">
+                <span className="bus-tracking-blue-marker"><FaBus /></span>
+                <span><small>BUS LOCATION</small><strong>{formatCoordinate(location.lat)}, {formatCoordinate(location.lng)}</strong></span>
+              </div>
+              <span aria-hidden="true" style={{ width: 3, height: 13, margin: '-7px 0 -7px 16px', borderRadius: 999, background: '#0867df' }} />
+              <div className={`bus-tracking-location-item ${schoolLocation ? '' : 'is-unavailable'}`}>
+                <span className="bus-tracking-blue-marker"><FaSchool /></span>
+                <span><small>SCHOOL LOCATION</small><strong>{schoolLocation ? `${formatCoordinate(schoolLocation.lat)}, ${formatCoordinate(schoolLocation.lng)}` : 'Not available in login response'}</strong></span>
+              </div>
+            </div>
 
             {coordinatesAvailable && <button type="button" className="bus-tracking-locate" onClick={showRouteToBus} disabled={routeLoading} aria-label="Refresh my location">{routeLoading ? <Spinner animation="border" size="sm" /> : <FaCrosshairs />}</button>}
 
