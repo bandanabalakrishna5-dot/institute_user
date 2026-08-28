@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Alert, Spinner } from 'react-bootstrap';
-import { FaArrowLeft, FaBell, FaBus, FaClock, FaCrosshairs, FaMapMarkerAlt, FaPhoneAlt, FaUser } from 'react-icons/fa';
+import { FaArrowLeft, FaBell, FaBus, FaClock, FaCrosshairs, FaMapMarkerAlt, FaUser } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../App';
 import {
@@ -10,7 +10,8 @@ import {
 
 function StudentBusTrackingPage() {
   const { stateAuth } = useContext(AuthContext);
-  const studentId = stateAuth?.user?.stdid;
+  const user = stateAuth?.user || {};
+  const studentId = user.stdid;
   const navigate = useNavigate();
   const [location, setLocation] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -143,13 +144,26 @@ function StudentBusTrackingPage() {
   }, []);
 
   const coordinatesAvailable = location?.lat != null && location?.lng != null;
-  const driverPhone = location?.drvph || location?.drvmbl || location?.mbleno || '';
+  const schoolLatitude = Number(user.latitude);
+  const schoolLongitude = Number(user.longitude);
+  const schoolLocation = String(user.latitude ?? '').trim() !== ''
+    && String(user.longitude ?? '').trim() !== ''
+    && Number.isFinite(schoolLatitude)
+    && schoolLatitude >= -90
+    && schoolLatitude <= 90
+    && Number.isFinite(schoolLongitude)
+    && schoolLongitude >= -180
+    && schoolLongitude <= 180
+    ? { lat: schoolLatitude, lng: schoolLongitude }
+    : null;
   const arrivalText = location?.eta != null
     ? `Arriving in ${location.eta} minute${Number(location.eta) === 1 ? '' : 's'}`
     : connected ? 'Bus is on the way' : 'Waiting for live updates';
   const embeddedMapUrl = mapSnapshot?.bus
     ? mapSnapshot.student
-      ? `https://maps.google.com/maps?saddr=${encodeURIComponent(mapSnapshot.student.lat)},${encodeURIComponent(mapSnapshot.student.lng)}&daddr=${encodeURIComponent(mapSnapshot.bus.lat)},${encodeURIComponent(mapSnapshot.bus.lng)}&dirflg=d&t=m&z=15&output=embed`
+      ? schoolLocation
+        ? `https://maps.google.com/maps?saddr=${encodeURIComponent(mapSnapshot.student.lat)},${encodeURIComponent(mapSnapshot.student.lng)}&daddr=${encodeURIComponent(mapSnapshot.bus.lat)},${encodeURIComponent(mapSnapshot.bus.lng)}+to:${encodeURIComponent(schoolLocation.lat)},${encodeURIComponent(schoolLocation.lng)}&dirflg=d&t=m&z=15&output=embed`
+        : `https://maps.google.com/maps?saddr=${encodeURIComponent(mapSnapshot.student.lat)},${encodeURIComponent(mapSnapshot.student.lng)}&daddr=${encodeURIComponent(mapSnapshot.bus.lat)},${encodeURIComponent(mapSnapshot.bus.lng)}&dirflg=d&t=m&z=15&output=embed`
       : `https://maps.google.com/maps?q=${encodeURIComponent(mapSnapshot.bus.lat)},${encodeURIComponent(mapSnapshot.bus.lng)}&t=m&z=15&output=embed`
     : '';
 
@@ -196,7 +210,7 @@ function StudentBusTrackingPage() {
           <div className="bus-tracking-live-loading"><Spinner animation="border" /><span>Finding your bus…</span></div>
         ) : location ? (
           <div className="bus-tracking-map-stage">
-            {embeddedMapUrl ? <iframe title="Live route from your location to the bus" src={embeddedMapUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen /> : <div className="bus-tracking-map-empty"><FaMapMarkerAlt /><span>Bus coordinates are unavailable</span></div>}
+            {embeddedMapUrl ? <iframe title="Live route connecting the student, bus, and school" src={embeddedMapUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen /> : <div className="bus-tracking-map-empty"><FaMapMarkerAlt /><span>Bus coordinates are unavailable</span></div>}
 
             <div className={`bus-tracking-live-pill ${connected ? 'connected' : ''}`}><span /> {connected ? 'LIVE' : 'OFFLINE'}</div>
 
@@ -214,11 +228,6 @@ function StudentBusTrackingPage() {
                 <div><FaUser /><strong>Driver: <span>{location.drvnm || 'Assigned driver'}</span></strong></div>
                 <div className="bus-tracking-arrival"><FaClock /><strong>{arrivalText}</strong></div>
               </div>
-              {driverPhone ? (
-                <a className="bus-tracking-call" href={`tel:${driverPhone}`} aria-label={`Call ${location.drvnm || 'driver'}`}><FaPhoneAlt /> Call Driver</a>
-              ) : (
-                <button type="button" className="bus-tracking-call" disabled><FaPhoneAlt /> Call Driver</button>
-              )}
               {location.updt && <small className="bus-tracking-updated">Updated {new Date(location.updt).toLocaleString()}</small>}
             </section>
           </div>
