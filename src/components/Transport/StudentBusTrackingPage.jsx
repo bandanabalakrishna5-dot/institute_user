@@ -9,6 +9,43 @@ import {
 } from '../../services/TransportServices/transportServices';
 import './StudentBusTrackingPage.css';
 
+function SmoothMapFrame({ src }) {
+  const [frameUrls, setFrameUrls] = useState(['', '']);
+  const [activeFrame, setActiveFrame] = useState(0);
+  const pendingFrameRef = useRef(null);
+
+  useEffect(() => {
+    if (!src || frameUrls[activeFrame] === src) return;
+    const nextFrame = activeFrame === 0 ? 1 : 0;
+    if (frameUrls[nextFrame] === src) return;
+    pendingFrameRef.current = nextFrame;
+    setFrameUrls((current) => current.map((url, index) => (index === nextFrame ? src : url)));
+  }, [src, activeFrame, frameUrls]);
+
+  const showLoadedFrame = (frameIndex) => {
+    if (pendingFrameRef.current !== frameIndex) return;
+    pendingFrameRef.current = null;
+    setActiveFrame(frameIndex);
+  };
+
+  return (
+    <div className="bus-tracking-map-frames">
+      {frameUrls.map((url, index) => url && (
+        <iframe
+          key={index}
+          className={index === activeFrame ? 'is-active' : ''}
+          title={`Live route map ${index + 1}`}
+          src={url}
+          loading="eager"
+          referrerPolicy="no-referrer-when-downgrade"
+          allowFullScreen
+          onLoad={() => showLoadedFrame(index)}
+        />
+      ))}
+    </div>
+  );
+}
+
 function StudentBusTrackingPage() {
   const { stateAuth } = useContext(AuthContext);
   const user = stateAuth?.user || {};
@@ -63,9 +100,13 @@ function StudentBusTrackingPage() {
       setError('');
     });
 
-    socket.connect();
-    fetchStudentBusLocation(studentId)
-      .then((response) => {
+    let requestInFlight = false;
+    let initialRequest = true;
+    const refreshBusLocation = async () => {
+      if (!active || requestInFlight) return;
+      requestInFlight = true;
+      try {
+        const response = await fetchStudentBusLocation(studentId);
         if (!active) return;
         const latestLocation = response?.payload?.[0];
         if (response?.status !== 'success' || !latestLocation) {
@@ -75,14 +116,24 @@ function StudentBusTrackingPage() {
         setLocation(latestLocation);
         setError('');
         subscribeToBus();
-      })
-      .catch((requestError) => {
+      } catch (requestError) {
         if (active) setError(requestError?.message || 'Unable to fetch the bus location.');
-      })
-      .finally(() => active && setLoading(false));
+      } finally {
+        requestInFlight = false;
+        if (active && initialRequest) {
+          initialRequest = false;
+          setLoading(false);
+        }
+      }
+    };
+
+    socket.connect();
+    refreshBusLocation();
+    const busRefreshInterval = window.setInterval(refreshBusLocation, 5000);
 
     return () => {
       active = false;
+      window.clearInterval(busRefreshInterval);
       socket.emit('student:stop-tracking');
       socket.removeAllListeners();
       socket.disconnect();
@@ -140,7 +191,7 @@ function StudentBusTrackingPage() {
         bus: { lat: bus.lat, lng: bus.lng },
         student: latestStudentLocationRef.current,
       });
-    }, 30000);
+    }, 5000);
     return () => window.clearInterval(mapRefreshInterval);
   }, []);
 
@@ -215,7 +266,7 @@ function StudentBusTrackingPage() {
           <div className="bus-tracking-live-loading"><Spinner animation="border" /><span>Finding your bus…</span></div>
         ) : location ? (
           <div className="bus-tracking-map-stage">
-            {embeddedMapUrl ? <iframe title="Live route connecting the student, bus, and school" src={embeddedMapUrl} loading="lazy" referrerPolicy="no-referrer-when-downgrade" allowFullScreen /> : <div className="bus-tracking-map-empty"><FaMapMarkerAlt /><span>Bus coordinates are unavailable</span></div>}
+            {embeddedMapUrl ? <SmoothMapFrame src={embeddedMapUrl} /> : <div className="bus-tracking-map-empty"><FaMapMarkerAlt /><span>Bus coordinates are unavailable</span></div>}
 
             <div className={`bus-tracking-live-pill ${connected ? 'connected' : ''}`}><span /> {connected ? 'LIVE' : 'OFFLINE'}</div>
 
