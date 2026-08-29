@@ -1,4 +1,6 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 import { Alert, Spinner } from 'react-bootstrap';
 import { FaArrowLeft, FaBell, FaBus, FaClock, FaCrosshairs, FaMapMarkerAlt, FaSchool, FaUser } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
@@ -9,41 +11,75 @@ import {
 } from '../../services/TransportServices/transportServices';
 import './StudentBusTrackingPage.css';
 
-function SmoothMapFrame({ src }) {
-  const [frameUrls, setFrameUrls] = useState(['', '']);
-  const [activeFrame, setActiveFrame] = useState(0);
-  const pendingFrameRef = useRef(null);
+const liveMapIcon = (symbol, label) => L.divIcon({
+  className: 'live-map-marker-wrap',
+  html: `<span class="live-map-marker" role="img" aria-label="${label}">${symbol}</span>`,
+  iconSize: [44, 44],
+  iconAnchor: [22, 22],
+  popupAnchor: [0, -24],
+});
+
+function LiveTrackingMap({ busLocation, studentLocation, schoolLocation }) {
+  const containerRef = useRef(null);
+  const mapRef = useRef(null);
+  const markersRef = useRef({});
+  const routeRef = useRef(null);
+  const fittedRef = useRef(false);
 
   useEffect(() => {
-    if (!src || frameUrls[activeFrame] === src) return;
-    const nextFrame = activeFrame === 0 ? 1 : 0;
-    if (frameUrls[nextFrame] === src) return;
-    pendingFrameRef.current = nextFrame;
-    setFrameUrls((current) => current.map((url, index) => (index === nextFrame ? src : url)));
-  }, [src, activeFrame, frameUrls]);
+    if (!containerRef.current || mapRef.current) return undefined;
+    const map = L.map(containerRef.current, { zoomControl: false }).setView([20.5937, 78.9629], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors',
+      maxZoom: 19,
+    }).addTo(map);
+    routeRef.current = L.polyline([], { color: '#0867df', weight: 5, opacity: .9 }).addTo(map);
+    mapRef.current = map;
 
-  const showLoadedFrame = (frameIndex) => {
-    if (pendingFrameRef.current !== frameIndex) return;
-    pendingFrameRef.current = null;
-    setActiveFrame(frameIndex);
-  };
+    return () => {
+      map.remove();
+      mapRef.current = null;
+      markersRef.current = {};
+      routeRef.current = null;
+      fittedRef.current = false;
+    };
+  }, []);
 
-  return (
-    <div className="bus-tracking-map-frames">
-      {frameUrls.map((url, index) => url && (
-        <iframe
-          key={index}
-          className={index === activeFrame ? 'is-active' : ''}
-          title={`Live route map ${index + 1}`}
-          src={url}
-          loading="eager"
-          referrerPolicy="no-referrer-when-downgrade"
-          allowFullScreen
-          onLoad={() => showLoadedFrame(index)}
-        />
-      ))}
-    </div>
-  );
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    const locations = [
+      { key: 'student', value: studentLocation, symbol: '●', label: 'My present location' },
+      { key: 'bus', value: busLocation, symbol: '🚌', label: 'Live bus location' },
+      { key: 'school', value: schoolLocation, symbol: '🏫', label: 'School location' },
+    ].filter(({ value }) => Number.isFinite(Number(value?.lat)) && Number.isFinite(Number(value?.lng)));
+
+    locations.forEach(({ key, value, symbol, label }) => {
+      const latLng = [Number(value.lat), Number(value.lng)];
+      if (!markersRef.current[key]) {
+        markersRef.current[key] = L.marker(latLng, {
+          icon: liveMapIcon(symbol, label),
+          zIndexOffset: key === 'bus' ? 1000 : 0,
+        }).bindPopup(label).addTo(map);
+      } else {
+        markersRef.current[key].setLatLng(latLng);
+      }
+    });
+
+    const routePoints = locations.map(({ value }) => [Number(value.lat), Number(value.lng)]);
+    routeRef.current?.setLatLngs(routePoints);
+    if (routePoints.length && !fittedRef.current) {
+      const bounds = L.latLngBounds(routePoints);
+      routePoints.length === 1
+        ? map.setView(routePoints[0], 16)
+        : map.fitBounds(bounds, { padding: [45, 45], maxZoom: 16 });
+      fittedRef.current = true;
+    } else if (busLocation && !map.getBounds().pad(-.12).contains([Number(busLocation.lat), Number(busLocation.lng)])) {
+      map.panTo([Number(busLocation.lat), Number(busLocation.lng)], { animate: true });
+    }
+  }, [busLocation, studentLocation, schoolLocation]);
+
+  return <div ref={containerRef} className="bus-tracking-leaflet-map" aria-label="Live student, bus, and school map" />;
 }
 
 function StudentBusTrackingPage() {
@@ -215,14 +251,6 @@ function StudentBusTrackingPage() {
   const arrivalText = location?.eta != null
     ? `Arriving in ${location.eta} minute${Number(location.eta) === 1 ? '' : 's'}`
     : connected ? 'Bus is on the way' : 'Waiting for live updates';
-  const embeddedMapUrl = mapSnapshot?.bus
-    ? mapSnapshot.student
-      ? schoolLocation
-        ? `https://maps.google.com/maps?saddr=${encodeURIComponent(mapSnapshot.student.lat)},${encodeURIComponent(mapSnapshot.student.lng)}&daddr=${encodeURIComponent(mapSnapshot.bus.lat)},${encodeURIComponent(mapSnapshot.bus.lng)}+to:${encodeURIComponent(schoolLocation.lat)},${encodeURIComponent(schoolLocation.lng)}&dirflg=d&t=m&z=15&output=embed`
-        : `https://maps.google.com/maps?saddr=${encodeURIComponent(mapSnapshot.student.lat)},${encodeURIComponent(mapSnapshot.student.lng)}&daddr=${encodeURIComponent(mapSnapshot.bus.lat)},${encodeURIComponent(mapSnapshot.bus.lng)}&dirflg=d&t=m&z=15&output=embed`
-      : `https://maps.google.com/maps?q=${encodeURIComponent(mapSnapshot.bus.lat)},${encodeURIComponent(mapSnapshot.bus.lng)}&t=m&z=15&output=embed`
-    : '';
-
   const showRouteToBus = () => {
     if (!navigator.geolocation) {
       setRouteError('Location access is not supported on this device.');
@@ -266,7 +294,7 @@ function StudentBusTrackingPage() {
           <div className="bus-tracking-live-loading"><Spinner animation="border" /><span>Finding your bus…</span></div>
         ) : location ? (
           <div className="bus-tracking-map-stage">
-            {embeddedMapUrl ? <SmoothMapFrame src={embeddedMapUrl} /> : <div className="bus-tracking-map-empty"><FaMapMarkerAlt /><span>Bus coordinates are unavailable</span></div>}
+            {mapSnapshot?.bus ? <LiveTrackingMap busLocation={mapSnapshot.bus} studentLocation={mapSnapshot.student} schoolLocation={schoolLocation} /> : <div className="bus-tracking-map-empty"><FaMapMarkerAlt /><span>Bus coordinates are unavailable</span></div>}
 
             <div className={`bus-tracking-live-pill ${connected ? 'connected' : ''}`}><span /> {connected ? 'LIVE' : 'OFFLINE'}</div>
 
