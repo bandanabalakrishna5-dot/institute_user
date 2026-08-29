@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Spinner } from 'react-bootstrap';
+import { Alert, Card, Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import {
   FaBookOpen,
@@ -16,6 +16,7 @@ import {
   FaCalendarAlt,
   FaTasks,
   FaStickyNote,
+  FaFileSignature,
 } from 'react-icons/fa';
 import {
   fetchStaffDailyTimetable,
@@ -27,6 +28,10 @@ import {
   USER_PORTAL_PERMISSIONS,
 } from '../../services/commonUtills/FormValidations';
 import { fetchInstituteEvents } from '../../services/EventServices/eventServices';
+import {
+  fetchStudentJoiningFormKey,
+  getStudentJoiningFormUrl,
+} from '../../services/JoiningFormServices/joiningFormServices';
 
 const eventDateValue = (value = '') => {
   const [day, month, year] = String(value).split('-').map(Number);
@@ -63,6 +68,29 @@ function StaffDashboard({ user }) {
   const [timetableLoading, setTimetableLoading] = useState(true);
   const [upcomingEvents, setUpcomingEvents] = useState([]);
   const [eventsLoading, setEventsLoading] = useState(true);
+  const [joiningFormLoading, setJoiningFormLoading] = useState(false);
+  const [joiningFormError, setJoiningFormError] = useState('');
+
+  const openStudentJoiningForm = async () => {
+    if (joiningFormLoading) return;
+    setJoiningFormLoading(true);
+    setJoiningFormError('');
+
+    try {
+      const response = await fetchStudentJoiningFormKey({
+        instid: user.instid,
+        brcid: user.brcid,
+      });
+      const key = response?.status === 'success' ? response.payload?.key : '';
+      if (!key) {
+        throw new Error(response?.error?.message || 'Unable to open the student joining form.');
+      }
+      window.location.assign(getStudentJoiningFormUrl(key));
+    } catch (error) {
+      setJoiningFormError(error.message || 'Unable to open the student joining form.');
+      setJoiningFormLoading(false);
+    }
+  };
 
   useEffect(() => {
     let active = true;
@@ -110,6 +138,12 @@ function StaffDashboard({ user }) {
     return () => { active = false; };
   }, [user.instid, user.brcid, user.acdmcyr, user.typ]);
   const exploreItems = [
+    hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.STUDENT_JOINING_FORM_ACCESS) && {
+      label: joiningFormLoading ? 'Opening Form...' : 'Student Joining Form',
+      action: openStudentJoiningForm,
+      icon: joiningFormLoading ? <Spinner animation="border" size="sm" /> : <FaFileSignature />,
+      color: 'green',
+    },
     canOpenTimetable && { label: 'Daily Timetable', path: '/timetable', icon: <FaCalendarDay />, color: 'blue' },
     hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.HOMEWORK_ACCESS) && {
       label: 'Homework',
@@ -213,12 +247,14 @@ function StaffDashboard({ user }) {
 
         <div className="dashboard-explore">
           <h6 className="feed-title">Explore</h6>
+          {joiningFormError && <Alert variant="danger" className="mb-3 py-2">{joiningFormError}</Alert>}
           <div className="dashboard-explore-grid">
             {exploreItems.map((item) => (
               <button
                 type="button"
                 className="dashboard-explore-item"
                 key={item.path || item.label}
+                disabled={joiningFormLoading && item.action === openStudentJoiningForm}
                 onClick={() => item.action ? item.action() : navigate(item.path)}
               >
                 <span className={`dashboard-explore-icon ${item.color}`}>

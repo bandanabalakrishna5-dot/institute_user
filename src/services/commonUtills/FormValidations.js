@@ -40,6 +40,7 @@ export const USER_PORTAL_PERMISSIONS = Object.freeze({
   HOMEWORK_UPDATE:  ['H_W_M_U'],
   HOMEWORK_DELETE:  ['H_W_M_D'],
   HOMEWORK_MANAGE:  ['H_W_M_C', 'H_W_M_U', 'H_W_M_D'],
+  STUDENT_JOINING_FORM_ACCESS: ['I_N_T_J_F', 'I_N_T_J_F_C'],
   TIMETABLE:        ['D_T_T'],
   ATTENDANCE:       ['A_T_D', 'A_T_D_V', 'A_T_D_M'],
   EXAMS:            ['E_X_M', 'E_X_M_V'],
