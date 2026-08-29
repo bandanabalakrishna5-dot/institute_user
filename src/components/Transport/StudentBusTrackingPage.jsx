@@ -24,6 +24,7 @@ function LiveTrackingMap({ busLocation, studentLocation, schoolLocation }) {
   const mapRef = useRef(null);
   const markersRef = useRef({});
   const routeRef = useRef(null);
+  const routeRequestRef = useRef(null);
   const fittedRef = useRef(false);
 
   useEffect(() => {
@@ -41,6 +42,8 @@ function LiveTrackingMap({ busLocation, studentLocation, schoolLocation }) {
       mapRef.current = null;
       markersRef.current = {};
       routeRef.current = null;
+      routeRequestRef.current?.abort();
+      routeRequestRef.current = null;
       fittedRef.current = false;
     };
   }, []);
@@ -66,17 +69,64 @@ function LiveTrackingMap({ busLocation, studentLocation, schoolLocation }) {
       }
     });
 
-    const routePoints = locations.map(({ value }) => [Number(value.lat), Number(value.lng)]);
-    routeRef.current?.setLatLngs(routePoints);
-    if (routePoints.length && !fittedRef.current) {
-      const bounds = L.latLngBounds(routePoints);
-      routePoints.length === 1
-        ? map.setView(routePoints[0], 16)
+    const markerPoints = locations.map(({ value }) => [Number(value.lat), Number(value.lng)]);
+    if (markerPoints.length && !fittedRef.current) {
+      const bounds = L.latLngBounds(markerPoints);
+      markerPoints.length === 1
+        ? map.setView(markerPoints[0], 16)
         : map.fitBounds(bounds, { padding: [45, 45], maxZoom: 16 });
       fittedRef.current = true;
     } else if (busLocation && !map.getBounds().pad(-.12).contains([Number(busLocation.lat), Number(busLocation.lng)])) {
       map.panTo([Number(busLocation.lat), Number(busLocation.lng)], { animate: true });
     }
+  }, [busLocation, studentLocation, schoolLocation]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return undefined;
+
+    const locations = [studentLocation, busLocation, schoolLocation]
+      .filter((value) => Number.isFinite(Number(value?.lat)) && Number.isFinite(Number(value?.lng)));
+
+    routeRequestRef.current?.abort();
+    routeRef.current?.setLatLngs([]);
+    if (locations.length < 2) return undefined;
+
+    const controller = new AbortController();
+    routeRequestRef.current = controller;
+    const coordinates = locations
+      .map(({ lat, lng }) => `${Number(lng)},${Number(lat)}`)
+      .join(';');
+
+    const loadRoadRoute = async () => {
+      try {
+        const response = await fetch(
+          `https://router.project-osrm.org/route/v1/driving/${coordinates}?overview=full&geometries=geojson`,
+          { signal: controller.signal },
+        );
+        if (!response.ok) throw new Error(`Routing request failed (${response.status})`);
+        const data = await response.json();
+        const roadCoordinates = data?.routes?.[0]?.geometry?.coordinates;
+        if (!Array.isArray(roadCoordinates) || roadCoordinates.length < 2) {
+          throw new Error('No road route was found');
+        }
+
+        const roadPoints = roadCoordinates.map(([lng, lat]) => [lat, lng]);
+        routeRef.current?.setLatLngs(roadPoints);
+        if (!fittedRef.current) {
+          map.fitBounds(L.latLngBounds(roadPoints), { padding: [45, 45], maxZoom: 16 });
+          fittedRef.current = true;
+        }
+      } catch (routeError) {
+        if (routeError.name !== 'AbortError') {
+          // Keep markers visible instead of drawing a misleading straight line.
+          routeRef.current?.setLatLngs([]);
+        }
+      }
+    };
+
+    loadRoadRoute();
+    return () => controller.abort();
   }, [busLocation, studentLocation, schoolLocation]);
 
   return <div ref={containerRef} className="bus-tracking-leaflet-map" aria-label="Live student, bus, and school map" />;
