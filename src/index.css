@@ -1130,6 +1130,13 @@ textarea.form-control {
 .fee-detail-amounts small { color: #94a3b8; font-size: .62rem; font-weight: 600; }
 .fee-detail-amounts .pending { color: #dc2626; }
 .fee-detail-amounts .paid { color: #059669; }
+.fee-payment-dates { padding-top: 11px; margin-top: 11px; border-top: 1px solid #f1f5f9; }
+.fee-payment-dates h3 { display: flex; align-items: center; gap: 6px; margin: 0 0 9px; color: #475569; font-size: .7rem; font-weight: 800; }
+.fee-payment-dates h3 svg { color: #2563eb; }
+.fee-payment-dates > div { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
+.fee-payment-dates span { min-width: 0; display: flex; flex-direction: column; gap: 1px; padding: 7px 8px; border-radius: 9px; background: #f8fafc; }
+.fee-payment-dates small { color: #94a3b8; font-size: .56rem; font-weight: 700; }
+.fee-payment-dates strong { color: #1e293b; font-size: .65rem; white-space: nowrap; }
 
 @media (max-width: 480px) {
   .fee-details-page { padding: 14px 14px 104px; }
@@ -1137,6 +1144,7 @@ textarea.form-control {
   .fee-status-badge { position: static; width: fit-content; margin-top: 10px; }
   .fee-detail-card { padding: 13px; }
   .fee-detail-title { align-items: flex-start; }
+  .fee-payment-dates > div { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 .attendance-page {

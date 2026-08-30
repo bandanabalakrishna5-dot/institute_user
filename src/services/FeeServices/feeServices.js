@@ -10,3 +10,11 @@ export const fetchStudentFeeSummary = async (params) => {
   );
   return response.data;
 };
+
+export const fetchStudentPaymentDates = async (params) => {
+  const response = await apiGetHelper(
+    `${API_URL}/common/student-payment-dates`,
+    { ...jsonHeaders, params },
+  );
+  return response.data;
+};

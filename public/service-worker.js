@@ -1,4 +1,4 @@
-const CACHE_NAME = 'institute-user-v3';
+const CACHE_NAME = 'institute-user-v4';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -57,6 +57,7 @@ self.addEventListener('push', (event) => {
     data: { url: data.url || '/notifications' },
     silent: false,
     renotify: true,
+    timestamp: Date.now(),
     vibrate: [180, 80, 180],
   }));
 });

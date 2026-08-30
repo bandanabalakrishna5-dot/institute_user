@@ -4,6 +4,7 @@ import {
   FaArrowLeft,
   FaBook,
   FaBus,
+  FaCalendarCheck,
   FaCheckCircle,
   FaClock,
   FaGraduationCap,
@@ -11,7 +12,10 @@ import {
 } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../App';
-import { fetchStudentFeeSummary } from '../../services/FeeServices/feeServices';
+import {
+  fetchStudentFeeSummary,
+  fetchStudentPaymentDates,
+} from '../../services/FeeServices/feeServices';
 import Layout from '../common/Layout';
 
 const feeTypes = [
@@ -42,6 +46,7 @@ function StudentFeeDetails() {
   const user = stateAuth?.user || {};
   const navigate = useNavigate();
   const [summary, setSummary] = useState(null);
+  const [paymentsByType, setPaymentsByType] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -55,17 +60,37 @@ function StudentFeeDetails() {
     setLoading(true);
     setError('');
     try {
-      const response = await fetchStudentFeeSummary({
+      const params = {
         stdid: user.stdid,
         instid: user.instid,
         brcid: user.brcid,
         clsid: user.clsid,
         acdmcyr: user.acdmcyr,
-      });
+      };
+      const [response, paymentDatesResponse] = await Promise.all([
+        fetchStudentFeeSummary(params),
+        fetchStudentPaymentDates(params),
+      ]);
       if (response?.status !== 'success' || !response?.payload) {
         throw new Error(response?.error?.message || 'Unable to load fee details.');
       }
       setSummary(response.payload);
+      const paymentPayload = paymentDatesResponse?.status === 'success'
+        ? paymentDatesResponse.payload || {}
+        : {};
+      setPaymentsByType(feeTypes.reduce((result, feeType) => {
+        const records = Array.isArray(paymentPayload[feeType.key])
+          ? paymentPayload[feeType.key]
+          : paymentPayload[feeType.key] ? [paymentPayload[feeType.key]] : [];
+        result[feeType.key] = records
+          .filter((payment) => payment?.pddt)
+          .sort((first, second) => {
+            const installmentDifference = amount(first.noofinst) - amount(second.noofinst);
+            return installmentDifference || new Date(first.pddt) - new Date(second.pddt);
+          })
+          .slice(0, 4);
+        return result;
+      }, {}));
     } catch (requestError) {
       setError(requestError?.message || 'Unable to load fee details.');
     } finally {
@@ -159,6 +184,19 @@ function StudentFeeDetails() {
                           <small>Pending</small>{currency.format(fee.pending)}
                         </span>
                       </div>
+                      {paymentsByType[fee.key]?.length > 0 && (
+                        <div className="fee-payment-dates">
+                          <h3><FaCalendarCheck /> Payment dates</h3>
+                          <div>
+                            {paymentsByType[fee.key].map((payment, index) => (
+                              <span key={`${payment.noofinst || index}-${payment.pddt}`}>
+                                <small>{payment.noofinst ? `Installment ${payment.noofinst}` : `Payment ${index + 1}`}</small>
+                                <strong>{formatDate(payment.pddt)}</strong>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </article>
                 ))}

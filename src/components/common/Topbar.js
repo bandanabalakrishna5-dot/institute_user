@@ -37,11 +37,20 @@ import {
   enablePushNotifications,
 } from '../../services/NotificationServices/pushNotificationServices';
 
-const playNotificationSound = () => {
+let notificationAudioContext;
+
+const getNotificationAudioContext = () => {
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return null;
+  if (!notificationAudioContext) notificationAudioContext = new AudioContext();
+  return notificationAudioContext;
+};
+
+const playNotificationSound = async () => {
   try {
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContext) return;
-    const context = new AudioContext();
+    const context = getNotificationAudioContext();
+    if (!context) return;
+    if (context.state === 'suspended') await context.resume();
     const oscillator = context.createOscillator();
     const gain = context.createGain();
     oscillator.connect(gain);
@@ -54,7 +63,6 @@ const playNotificationSound = () => {
     gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.32);
     oscillator.start(context.currentTime);
     oscillator.stop(context.currentTime + 0.34);
-    oscillator.onended = () => context.close();
   } catch (error) {
     // Audio can be blocked until the user interacts with the page.
   }
@@ -100,6 +108,7 @@ function Topbar() {
   const [avatarImageFailed, setAvatarImageFailed] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const latestNotificationIdRef = useRef(null);
+  const pushRegistrationAttemptedRef = useRef(false);
   const drawerRef = useRef(null);
   const navigate  = useNavigate();
 
@@ -120,6 +129,37 @@ function Topbar() {
   useEffect(() => {
     setAvatarImageFailed(false);
   }, [profileImageUrl]);
+
+  useEffect(() => {
+    const unlockNotificationAudio = () => {
+      const context = getNotificationAudioContext();
+      if (context?.state === 'suspended') context.resume().catch(() => {});
+    };
+    window.addEventListener('pointerdown', unlockNotificationAudio, { once: true });
+    window.addEventListener('keydown', unlockNotificationAudio, { once: true });
+    return () => {
+      window.removeEventListener('pointerdown', unlockNotificationAudio);
+      window.removeEventListener('keydown', unlockNotificationAudio);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (pushRegistrationAttemptedRef.current
+      || !user.usrid
+      || !['STAFF', 'STUDENT'].includes(typ)
+      || !('Notification' in window)
+      || Notification.permission !== 'granted') return;
+    pushRegistrationAttemptedRef.current = true;
+    enablePushNotifications({
+      usrid: user.usrid,
+      typ: user.typ,
+      instid: user.instid,
+      brcid: user.brcid,
+      clsnm: user.clsnm,
+    }).catch((error) => {
+      console.error('Unable to restore push notifications:', error);
+    });
+  }, [typ, user.brcid, user.clsnm, user.instid, user.typ, user.usrid]);
 
   useEffect(() => {
     let active = true;
