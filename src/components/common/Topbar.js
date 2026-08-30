@@ -32,6 +32,10 @@ import {
   USER_PORTAL_PERMISSIONS,
 } from '../../services/commonUtills/FormValidations';
 import { fetchInstituteNotificationCount } from '../../services/NotificationServices/notificationServices';
+import {
+  disablePushNotifications,
+  enablePushNotifications,
+} from '../../services/NotificationServices/pushNotificationServices';
 
 const playNotificationSound = () => {
   try {
@@ -154,7 +158,12 @@ function Topbar() {
     };
   }, [notificationSeenKey, typ, user.acdmcyr, user.brcid, user.clsnm, user.instid, user.usrid]);
 
-  const openNotifications = () => {
+  const openNotifications = async () => {
+    if (['STAFF', 'STUDENT'].includes(typ)) {
+      enablePushNotifications(user).catch((error) => {
+        console.error('Unable to enable push notifications:', error);
+      });
+    }
     if (latestNotificationIdRef.current) {
       localStorage.setItem(notificationSeenKey, String(latestNotificationIdRef.current));
     }
@@ -182,8 +191,13 @@ function Topbar() {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  const logout = () => {
+  const logout = async () => {
     setShowProfileDrawer(false);
+    try {
+      await disablePushNotifications();
+    } catch (error) {
+      console.error('Unable to disable push notifications:', error);
+    }
     dispatchAuth({ type: 'LOGOUT' });
     navigate('/');
   };

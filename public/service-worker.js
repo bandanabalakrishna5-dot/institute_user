@@ -1,4 +1,4 @@
-const CACHE_NAME = 'institute-user-v2';
+const CACHE_NAME = 'institute-user-v3';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -40,4 +40,35 @@ self.addEventListener('fetch', (event) => {
       return response;
     })));
   }
+});
+
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data?.json() || {};
+  } catch (error) {
+    data = { body: event.data?.text() || 'You have a new update.' };
+  }
+  event.waitUntil(self.registration.showNotification(data.title || 'Institute App', {
+    body: data.body || 'You have a new update.',
+    icon: '/icons/app-icon-192.png',
+    badge: '/icons/app-icon-192.png',
+    tag: data.tag || 'institute-notification',
+    data: { url: data.url || '/notifications' },
+    silent: false,
+    renotify: true,
+    vibrate: [180, 80, 180],
+  }));
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = new URL(event.notification.data?.url || '/notifications', self.location.origin).href;
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+    const existingClient = clients.find((client) => client.url.startsWith(self.location.origin));
+    if (existingClient) {
+      return existingClient.navigate(targetUrl).then(() => existingClient.focus());
+    }
+    return self.clients.openWindow(targetUrl);
+  }));
 });

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import { Alert, Modal, Button, Form } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { loginUserValidate, forgotPasswordUser } from './operation';
 import { FaEye, FaEyeSlash, FaLock, FaUserAlt, FaStar, FaGraduationCap, FaBookOpen } from 'react-icons/fa';
 import { BsShield } from 'react-icons/bs';
@@ -14,7 +14,7 @@ const initialState = {
 };
 
 function Login() {
-  const { dispatchAuth } = useContext(AuthContext);
+  const { stateAuth, dispatchAuth } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -31,10 +31,6 @@ function Login() {
   const [cpLoading, setCpLoading] = useState(false);
   
   const navigate = useNavigate();
-
-  useEffect(() => {
-    dispatchAuth({ type: 'LOGOUT' });
-  }, [dispatchAuth]);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -149,6 +145,10 @@ function Login() {
       hideMessage();
     }
   };
+
+  if (stateAuth?.isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   return (
     <>
