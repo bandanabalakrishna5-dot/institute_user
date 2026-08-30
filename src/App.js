@@ -7,48 +7,23 @@ export const AuthContext = React.createContext();
 const USER_STORAGE_KEY = 'institute-user-session';
 const PROFILES_STORAGE_KEY = 'institute-student-profiles';
 
-const getStoredValue = (secureKey, fallbackKey) => {
+const clearStoredAuthentication = () => {
   try {
-    const secureValue = secureLocalStorage.getItem(secureKey);
-    if (secureValue && secureValue !== 'undefined' && secureValue !== 'null') return secureValue;
+    secureLocalStorage.removeItem('user');
+    secureLocalStorage.removeItem('studentProfiles');
   } catch (error) {
-    // Android WebView storage keys can change after an app process restart.
+    // Continue clearing the standard storage if secure storage is unavailable.
   }
-  return localStorage.getItem(fallbackKey);
+  localStorage.removeItem(USER_STORAGE_KEY);
+  localStorage.removeItem(PROFILES_STORAGE_KEY);
 };
 
 const getInitialState = () => {
-  const userData = getStoredValue('user', USER_STORAGE_KEY);
-  const profilesData = getStoredValue('studentProfiles', PROFILES_STORAGE_KEY);
-  let user = {};
-  let isAuthenticated = false;
-
-  if (userData && userData !== 'undefined' && userData !== 'null') {
-    try {
-      const parsedUser =
-        typeof userData === 'string' ? JSON.parse(userData) : userData;
-      if (parsedUser && Object.keys(parsedUser).length > 0) {
-        user = parsedUser;
-        isAuthenticated = true;
-      }
-    } catch (e) {
-      user = {};
-      isAuthenticated = false;
-    }
-  }
-
+  clearStoredAuthentication();
   return {
-    isAuthenticated,
-    user,
-    studentProfiles: (() => {
-      try {
-        return profilesData
-          ? (typeof profilesData === 'string' ? JSON.parse(profilesData) : profilesData)
-          : [];
-      } catch (e) {
-        return [];
-      }
-    })(),
+    isAuthenticated: false,
+    user: {},
+    studentProfiles: [],
   };
 };
 
@@ -57,10 +32,6 @@ const initialStateAuth = getInitialState();
 const reducerAuth = (state, action) => {
   switch (action.type) {
     case 'LOGIN':
-      secureLocalStorage.setItem('user', JSON.stringify(action.payload.user));
-      secureLocalStorage.setItem('studentProfiles', JSON.stringify(action.payload.studentProfiles || []));
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(action.payload.user));
-      localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(action.payload.studentProfiles || []));
       return {
         ...state,
         isAuthenticated: true,
@@ -68,8 +39,6 @@ const reducerAuth = (state, action) => {
         studentProfiles: action.payload.studentProfiles || [],
       };
     case 'SELECT_STUDENT':
-      secureLocalStorage.setItem('user', JSON.stringify(action.payload.user));
-      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(action.payload.user));
       return {
         ...state,
         isAuthenticated: true,
