@@ -9,6 +9,7 @@ import {
   FaShieldAlt,
 } from 'react-icons/fa';
 import { saveDriverGpsLocation } from '../../services/TransportServices/transportServices';
+import { getIndiaGreeting } from './dashboardGreeting';
 
 function TransportDashboard({ user }) {
   const gpsWatchRef = useRef(null);
@@ -125,7 +126,7 @@ function TransportDashboard({ user }) {
       <section className="transport-hero">
         <div>
           <span className="transport-eyebrow">DRIVER DASHBOARD</span>
-          <h2>Good Morning, {user.drvnm || 'Driver'}!</h2>
+          <h2>{getIndiaGreeting()}, {user.drvnm || 'Driver'}!</h2>
           <p>Your route is ready. Drive safe and stay connected.</p>
         </div>
         <div className={`transport-hero-status ${gpsEnabled ? 'live' : ''}`}>

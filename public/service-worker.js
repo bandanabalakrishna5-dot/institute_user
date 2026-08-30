@@ -1,5 +1,12 @@
-const CACHE_NAME = 'institute-user-v1';
-const APP_SHELL = ['./', './index.html', './manifest.json', './icons/app-icon.svg'];
+const CACHE_NAME = 'institute-user-v2';
+const APP_SHELL = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/icons/app-icon.svg',
+  '/icons/app-icon-192.png',
+  '/icons/app-icon-512.png'
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
@@ -20,7 +27,7 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
 
   if (request.mode === 'navigate') {
-    event.respondWith(fetch(request).catch(() => caches.match('./index.html')));
+    event.respondWith(fetch(request).catch(() => caches.match('/index.html')));
     return;
   }
 

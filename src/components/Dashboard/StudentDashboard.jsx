@@ -24,6 +24,7 @@ import {
   formatPeriodLabel,
   uniqueTimetablePeriods,
 } from '../../services/TimetableServices/timetableServices';
+import { getIndiaGreeting } from './dashboardGreeting';
 
 function StudentDashboard({ user }) {
   const navigate = useNavigate();
@@ -99,7 +100,7 @@ function StudentDashboard({ user }) {
     <div className="dashboard-content student-dashboard-content">
       <div className="welcome-banner staff-welcome-banner student-welcome-banner">
         <span className="staff-welcome-kicker">STUDENT DASHBOARD</span>
-        <h2>Good Morning, {user.stdnm || 'Student'}!</h2>
+        <h2>{getIndiaGreeting()}, {user.stdnm || 'Student'}!</h2>
         <p>Ready to learn today?</p>
       </div>
 

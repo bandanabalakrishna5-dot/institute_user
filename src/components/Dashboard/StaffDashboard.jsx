@@ -32,6 +32,7 @@ import {
   fetchStudentJoiningFormKey,
   getStudentJoiningFormUrl,
 } from '../../services/JoiningFormServices/joiningFormServices';
+import { getIndiaGreeting } from './dashboardGreeting';
 
 const eventDateValue = (value = '') => {
   const [day, month, year] = String(value).split('-').map(Number);
@@ -211,7 +212,7 @@ function StaffDashboard({ user }) {
     <div className="dashboard-content staff-dashboard-content">
       <div className="welcome-banner staff-welcome-banner">
         <span className="staff-welcome-kicker">STAFF DASHBOARD</span>
-        <h2>Good Morning, {user.stfnm || 'Staff'}!</h2>
+        <h2>{getIndiaGreeting()}, {user.stfnm || 'Staff'}!</h2>
         <p>Here's your schedule for today.</p>
       </div>
 

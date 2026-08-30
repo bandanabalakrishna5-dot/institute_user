@@ -25,25 +25,36 @@ const isStandalone = () =>
   window.navigator.standalone === true;
 
 function InstallAppButton() {
-  const [installPrompt, setInstallPrompt] = useState(null);
+  const [installPrompt, setInstallPrompt] = useState(
+    () => window.__instituteInstallPrompt || null
+  );
   const [installed, setInstalled] = useState(() => isStandalone() || wasInstalled());
   const [message, setMessage] = useState('');
 
   useEffect(() => {
     const handleInstallPrompt = (event) => {
       event.preventDefault();
+      window.__instituteInstallPrompt = event;
       if (!wasInstalled()) setInstallPrompt(event);
+    };
+    const handleCapturedInstallPrompt = () => {
+      if (!wasInstalled()) {
+        setInstallPrompt(window.__instituteInstallPrompt || null);
+      }
     };
     const handleInstalled = () => {
       rememberInstalled();
+      window.__instituteInstallPrompt = null;
       setInstalled(true);
       setInstallPrompt(null);
     };
 
     window.addEventListener('beforeinstallprompt', handleInstallPrompt);
+    window.addEventListener('institute-install-prompt-ready', handleCapturedInstallPrompt);
     window.addEventListener('appinstalled', handleInstalled);
     return () => {
       window.removeEventListener('beforeinstallprompt', handleInstallPrompt);
+      window.removeEventListener('institute-install-prompt-ready', handleCapturedInstallPrompt);
       window.removeEventListener('appinstalled', handleInstalled);
     };
   }, []);
@@ -60,6 +71,7 @@ function InstallAppButton() {
 
     await installPrompt.prompt();
     const { outcome } = await installPrompt.userChoice;
+    window.__instituteInstallPrompt = null;
     setInstallPrompt(null);
     if (outcome === 'accepted') {
       rememberInstalled();

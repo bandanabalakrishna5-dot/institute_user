@@ -1,1 +1,33 @@
-{"name":"Institute Student & Parent App","short_name":"Institute App","description":"Student and parent access to institute services.","start_url":".","scope":".","display":"standalone","orientation":"portrait-primary","background_color":"#f8fafc","theme_color":"#315bea","icons":[{"src":"icons/app-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]}
+{
+  "id": "/",
+  "name": "Institute Student & Parent App",
+  "short_name": "Institute App",
+  "description": "Student and parent access to institute services.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait-primary",
+  "background_color": "#f8fafc",
+  "theme_color": "#315bea",
+  "icons": [
+    {
+      "src": "/icons/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

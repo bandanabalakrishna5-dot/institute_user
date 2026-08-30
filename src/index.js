@@ -4,6 +4,14 @@ import './index.css';
 import App from './App';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
+// Capture the one-shot install event before routed screens mount. Some Android
+// browsers emit it while the initial bundle is still rendering.
+window.addEventListener('beforeinstallprompt', (event) => {
+  event.preventDefault();
+  window.__instituteInstallPrompt = event;
+  window.dispatchEvent(new Event('institute-install-prompt-ready'));
+});
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
 

@@ -19,6 +19,23 @@ const getNotificationSource = (type) => ({
   STUDENT: 'Student',
   INSTITUTE: 'Institute',
 }[String(type || '').toUpperCase()] || 'Institute');
+
+const getIndiaTodayKey = () => {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Kolkata',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(new Date());
+  const value = Object.fromEntries(parts.map(({ type, value: partValue }) => [type, partValue]));
+  return `${value.year}-${value.month}-${value.day}`;
+};
+
+const getNotificationDateKey = (value) => {
+  const match = String(value || '').trim().match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  return match ? `${match[3]}-${match[2]}-${match[1]}` : '';
+};
+
 function NotificationsPage() {
   const { stateAuth } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -50,9 +67,13 @@ function NotificationsPage() {
         notificationSource: getNotificationSource(item.typ),
       })),
     );
+    const todayKey = getIndiaTodayKey();
     const uniqueNotifications = Array.from(
       new Map(combined.map((item, index) => [`${item.ntfid ?? index}-${item.notificationSource}`, item])).values(),
-    );
+    ).filter((item) => {
+      const notificationDateKey = getNotificationDateKey(item.dt);
+      return notificationDateKey && notificationDateKey >= todayKey;
+    });
 
     if (!successfulResponses.length) {
       const response = responses[0];

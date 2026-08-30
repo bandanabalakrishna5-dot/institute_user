@@ -337,6 +337,7 @@ function Login() {
           }
           .login-right-panel-new {
             flex: 1;
+            min-width: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -347,6 +348,8 @@ function Login() {
           }
           .login-auth-shell {
             width: min(100%, 820px);
+            max-width: 100%;
+            min-width: 0;
             min-height: 620px;
             background: rgba(255,255,255,0.92);
             border-radius: 18px;
@@ -488,11 +491,16 @@ function Login() {
           }
           .login-form-wrap {
             width: 100%;
+            min-width: 0;
+            max-width: 100%;
             display: flex;
             flex-direction: column;
             gap: 16px;
           }
           .login-input-group {
+            width: 100%;
+            min-width: 0;
+            max-width: 100%;
             display: flex;
             align-items: stretch;
             border: 1px solid #cbd5e1;
