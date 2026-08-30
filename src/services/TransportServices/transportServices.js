@@ -25,4 +25,5 @@ export const fetchStudentBusLocation = async (studentId) => {
 export const createBusTrackingSocket = () => io(SOCKET_URL, {
   autoConnect: false,
   transports: ['websocket', 'polling'],
+  auth: { token: sessionStorage.getItem('institute-auth-token') || '' },
 });
