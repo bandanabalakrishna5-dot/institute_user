@@ -1,4 +1,4 @@
-const CACHE_NAME = 'institute-user-v4';
+const CACHE_NAME = 'institute-user-v5';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -27,7 +27,9 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
 
   if (request.mode === 'navigate') {
-    event.respondWith(fetch(request).catch(() => caches.match('/index.html')));
+    event.respondWith(fetch(request)
+      .then((response) => (response.ok ? response : caches.match('/index.html')))
+      .catch(() => caches.match('/index.html')));
     return;
   }
 
