@@ -31,7 +31,10 @@ import {
   hasAnyPermission,
   USER_PORTAL_PERMISSIONS,
 } from '../../services/commonUtills/FormValidations';
-import { fetchInstituteNotificationCount } from '../../services/NotificationServices/notificationServices';
+import {
+  fetchHomeworkNotifications,
+  fetchInstituteNotificationCount,
+} from '../../services/NotificationServices/notificationServices';
 import {
   disablePushNotifications,
   enablePushNotifications,
@@ -108,6 +111,7 @@ function Topbar() {
   const [avatarImageFailed, setAvatarImageFailed] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
   const latestNotificationIdRef = useRef(null);
+  const latestHomeworkNotificationIdRef = useRef(null);
   const pushRegistrationAttemptedRef = useRef(false);
   const drawerRef = useRef(null);
   const navigate  = useNavigate();
@@ -125,6 +129,7 @@ function Topbar() {
     ? String(user.pturl || '').trim()
     : '';
   const notificationSeenKey = `portal-notifications-seen:${typ}:${user.usrid || 'unknown'}`;
+  const homeworkNotificationSeenKey = `homework-notifications-seen:${user.stdid || 'unknown'}`;
 
   useEffect(() => {
     setAvatarImageFailed(false);
@@ -166,37 +171,62 @@ function Topbar() {
     const loadNotificationCount = async () => {
       if (!user.usrid || !['STAFF', 'STUDENT'].includes(typ)) return;
       try {
-        const response = await fetchInstituteNotificationCount({
+        const notificationParams = {
           instid: user.instid,
           brcid: user.brcid,
           acdmcyr: user.acdmcyr,
           usrid: user.usrid,
           typ,
           ...(typ === 'STUDENT' && user.clsnm ? { clsnm: user.clsnm } : {}),
-        });
+        };
+        const [response, homeworkResponse] = await Promise.all([
+          fetchInstituteNotificationCount(notificationParams),
+          typ === 'STUDENT' && user.stdid
+            ? fetchHomeworkNotifications(user.stdid, notificationParams).catch(() => null)
+            : Promise.resolve(null),
+        ]);
         const count = typ === 'STAFF'
           ? response?.payload?.staffCount
           : response?.payload?.classCount;
         const latestNotificationId = Number(response?.payload?.latestNotificationId) || 0;
+        const homeworkNotifications = Array.isArray(homeworkResponse?.payload)
+          ? homeworkResponse.payload
+          : [];
+        const latestHomeworkNotificationId = homeworkNotifications.reduce(
+          (latest, item) => Math.max(latest, Number(item.ntfid) || 0),
+          0,
+        );
         if (active) {
           const lastSeenNotificationId = Number(localStorage.getItem(notificationSeenKey)) || 0;
+          const lastSeenHomeworkNotificationId = Number(localStorage.getItem(homeworkNotificationSeenKey)) || 0;
           if (latestNotificationIdRef.current !== null && latestNotificationId > latestNotificationIdRef.current) {
             playNotificationSound();
           }
+          if (
+            latestHomeworkNotificationIdRef.current !== null
+            && latestHomeworkNotificationId > latestHomeworkNotificationIdRef.current
+          ) {
+            playNotificationSound();
+          }
           latestNotificationIdRef.current = latestNotificationId;
-          setNotificationCount(latestNotificationId > lastSeenNotificationId ? Number(count) || 0 : 0);
+          latestHomeworkNotificationIdRef.current = latestHomeworkNotificationId;
+          const instituteCount = latestNotificationId > lastSeenNotificationId ? Number(count) || 0 : 0;
+          const homeworkCount = homeworkNotifications.filter(
+            (item) => Number(item.ntfid) > lastSeenHomeworkNotificationId,
+          ).length;
+          setNotificationCount(instituteCount + homeworkCount);
         }
       } catch (error) {
         if (active) setNotificationCount(0);
       }
     };
     loadNotificationCount();
-    const notificationPoll = window.setInterval(loadNotificationCount, 5000);
+    const notificationPoll = window.setInterval(loadNotificationCount, 10000);
     return () => {
       active = false;
       window.clearInterval(notificationPoll);
     };
-  }, [notificationSeenKey, typ, user.acdmcyr, user.brcid, user.clsnm, user.instid, user.usrid]);
+  }, [homeworkNotificationSeenKey, notificationSeenKey, typ, user.acdmcyr, user.brcid, user.clsnm, user.instid, user.stdid, user.usrid]);
 
   const openNotifications = async () => {
     if (['STAFF', 'STUDENT'].includes(typ)) {
@@ -206,6 +236,9 @@ function Topbar() {
     }
     if (latestNotificationIdRef.current) {
       localStorage.setItem(notificationSeenKey, String(latestNotificationIdRef.current));
+    }
+    if (latestHomeworkNotificationIdRef.current) {
+      localStorage.setItem(homeworkNotificationSeenKey, String(latestHomeworkNotificationIdRef.current));
     }
     setNotificationCount(0);
     setShowProfileDrawer(false);
@@ -231,15 +264,16 @@ function Topbar() {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  const logout = async () => {
+  const logout = () => {
     setShowProfileDrawer(false);
-    try {
-      await disablePushNotifications();
-    } catch (error) {
-      console.error('Unable to disable push notifications:', error);
-    }
     dispatchAuth({ type: 'LOGOUT' });
-    navigate('/');
+    navigate('/', { replace: true });
+
+    // Push cleanup is best-effort and must never block signing out. In some
+    // WebViews navigator.serviceWorker.ready can remain pending indefinitely.
+    disablePushNotifications().catch((error) => {
+      console.error('Unable to disable push notifications:', error);
+    });
   };
 
   const goTo = (path) => {
@@ -430,7 +464,7 @@ function Topbar() {
                     </div>
                   </div>
 
-                  <button className="user-logout-btn user-drawer-logout" onClick={logout}
+                  <button type="button" className="user-logout-btn user-drawer-logout" onClick={logout}
                     style={{ marginTop: 20, width: '100%', justifyContent: 'center' }}
                   >
                     <FaSignOutAlt className="user-logout-icon" />

@@ -17,3 +17,14 @@ export const fetchInstituteNotificationCount = async (params) => {
   });
   return response.data;
 };
+
+export const fetchHomeworkNotifications = async (studentId, params) => {
+  const response = await apiGetHelper(
+    `${API_URL}/homework-notification/notification/${studentId}`,
+    {
+      headers: { 'Content-Type': 'application/json' },
+      params,
+    },
+  );
+  return response.data;
+};

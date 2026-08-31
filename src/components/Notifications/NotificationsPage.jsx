@@ -3,7 +3,10 @@ import { Alert, Spinner } from 'react-bootstrap';
 import { FaArrowLeft, FaBell, FaCalendarAlt } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../App';
-import { fetchUserNotifications } from '../../services/NotificationServices/notificationServices';
+import {
+  fetchHomeworkNotifications,
+  fetchUserNotifications,
+} from '../../services/NotificationServices/notificationServices';
 import Layout from '../common/Layout';
 
 const unwrapList = (response) => {
@@ -32,8 +35,11 @@ const getIndiaTodayKey = () => {
 };
 
 const getNotificationDateKey = (value) => {
-  const match = String(value || '').trim().match(/^(\d{2})-(\d{2})-(\d{4})$/);
-  return match ? `${match[3]}-${match[2]}-${match[1]}` : '';
+  const dateValue = String(value || '').trim();
+  const displayDateMatch = dateValue.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+  if (displayDateMatch) return `${displayDateMatch[3]}-${displayDateMatch[2]}-${displayDateMatch[1]}`;
+  const isoDateMatch = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return isoDateMatch ? `${isoDateMatch[1]}-${isoDateMatch[2]}-${isoDateMatch[3]}` : '';
 };
 
 function NotificationsPage() {
@@ -57,14 +63,17 @@ function NotificationsPage() {
     };
 
     const responses = [await fetchUserNotifications(baseParams)];
+    if (userType === 'STUDENT' && user.stdid) {
+      responses.push(await fetchHomeworkNotifications(user.stdid, baseParams).catch(() => ({ status: 'error' })));
+    }
 
     const successfulResponses = responses
-      .map((response) => ({ response }))
+      .map((response, index) => ({ response, index }))
       .filter(({ response }) => response?.status !== 'error' && !response?.errors?.length);
-    const combined = successfulResponses.flatMap(({ response }) =>
+    const combined = successfulResponses.flatMap(({ response, index }) =>
       unwrapList(response).map((item) => ({
         ...item,
-        notificationSource: getNotificationSource(item.typ),
+        notificationSource: index === 1 ? 'Homework' : getNotificationSource(item.typ),
       })),
     );
     const todayKey = getIndiaTodayKey();
@@ -83,11 +92,11 @@ function NotificationsPage() {
       setNotifications(uniqueNotifications);
     }
     setLoading(false);
-  }, [user.acdmcyr, user.brcid, user.clsnm, user.instid, user.usrid, userType]);
+  }, [user.acdmcyr, user.brcid, user.clsnm, user.instid, user.stdid, user.usrid, userType]);
 
   useEffect(() => {
     loadNotifications();
-    const notificationPoll = window.setInterval(loadNotifications, 5000);
+    const notificationPoll = window.setInterval(loadNotifications, 10000);
     return () => window.clearInterval(notificationPoll);
   }, [loadNotifications]);
 
