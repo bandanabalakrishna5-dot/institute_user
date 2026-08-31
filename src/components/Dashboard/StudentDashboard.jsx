@@ -84,7 +84,9 @@ function StudentDashboard({ user }) {
     hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.LEAVE) && {
       label: 'Leave Request', path: '/student-leave', icon: <FaClipboardCheck />, color: 'teal',
     },
-    { label: 'Bus Tracking', path: '/bus-tracking', icon: <FaBus />, color: 'cyan' },
+    Number(user.trnselgbl) === 1 && {
+      label: 'Bus Tracking', path: '/bus-tracking', icon: <FaBus />, color: 'cyan',
+    },
     hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.PROFILE) && {
       label: 'Profile', path: '/profile', icon: <FaUserCircle />, color: 'rose',
     },
