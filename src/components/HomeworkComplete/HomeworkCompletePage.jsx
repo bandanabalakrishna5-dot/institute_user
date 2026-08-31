@@ -167,6 +167,9 @@ function HomeworkCompletePage() {
         fksubid: homework.fksubid,
         sbnm: homework.sbnm,
         acdmcyr: user.acdmcyr,
+        fkinstid: user.instid,
+        fkbrcid: user.brcid,
+        usrid: user.usrid,
         complete: students.map((student) => {
           const studentId = student.sid ?? student.stdid;
           return {
