@@ -16,7 +16,6 @@ const clearStoredAuthentication = () => {
   }
   localStorage.removeItem(USER_STORAGE_KEY);
   localStorage.removeItem(PROFILES_STORAGE_KEY);
-  sessionStorage.removeItem('institute-auth-token');
 };
 
 const getInitialState = () => {
@@ -33,7 +32,6 @@ const initialStateAuth = getInitialState();
 const reducerAuth = (state, action) => {
   switch (action.type) {
     case 'LOGIN':
-      sessionStorage.setItem('institute-auth-token', action.payload.token || '');
       return {
         ...state,
         isAuthenticated: true,
@@ -52,7 +50,6 @@ const reducerAuth = (state, action) => {
       localStorage.removeItem(USER_STORAGE_KEY);
       localStorage.removeItem(PROFILES_STORAGE_KEY);
       localStorage.clear();
-      sessionStorage.removeItem('institute-auth-token');
       return {
         ...state,
         isAuthenticated: false,

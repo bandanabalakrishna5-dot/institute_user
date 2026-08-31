@@ -1,11 +1,5 @@
 import axios from 'axios';
 
-axios.interceptors.request.use((config) => {
-  const token = sessionStorage.getItem('institute-auth-token');
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
 export const apiPostHelper = async (URL, PAYLOAD, HEADERS) => {
   try {
     const responseData = await axios.post(URL, PAYLOAD, HEADERS);

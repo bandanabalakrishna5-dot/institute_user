@@ -83,7 +83,6 @@ function Login() {
         type: 'LOGIN',
         payload: {
           user: userData,
-          token: res.token,
           studentProfiles:
             validSessions.length > 1 && validSessions.every((item) => String(item.typ || '').toUpperCase() === 'STUDENT')
               ? validSessions
