@@ -6,6 +6,7 @@ import {
   FaBus,
   FaCalendarCheck,
   FaCheckCircle,
+  FaChevronDown,
   FaClock,
   FaGraduationCap,
   FaTshirt,
@@ -49,6 +50,14 @@ function StudentFeeDetails() {
   const [paymentsByType, setPaymentsByType] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [expandedPayments, setExpandedPayments] = useState({});
+
+  const togglePaymentDetails = (feeKey) => {
+    setExpandedPayments((current) => ({
+      ...current,
+      [feeKey]: !current[feeKey],
+    }));
+  };
 
   const loadFeeSummary = useCallback(async () => {
     if (!user.stdid || !user.instid || !user.brcid || !user.clsid || !user.acdmcyr) {
@@ -186,15 +195,26 @@ function StudentFeeDetails() {
                       </div>
                       {paymentsByType[fee.key]?.length > 0 && (
                         <div className="fee-payment-dates">
-                          <h3><FaCalendarCheck /> Payment dates</h3>
-                          <div>
-                            {paymentsByType[fee.key].map((payment, index) => (
-                              <span key={`${payment.noofinst || index}-${payment.pddt}`}>
-                                <small>{payment.noofinst ? `Installment ${payment.noofinst}` : `Payment ${index + 1}`}</small>
-                                <strong>{formatDate(payment.pddt)}</strong>
-                              </span>
-                            ))}
-                          </div>
+                          <button
+                            type="button"
+                            className="fee-payment-toggle"
+                            aria-expanded={Boolean(expandedPayments[fee.key])}
+                            onClick={() => togglePaymentDetails(fee.key)}
+                          >
+                            <span><FaCalendarCheck /> Payment details</span>
+                            <FaChevronDown className={expandedPayments[fee.key] ? 'expanded' : ''} />
+                          </button>
+                          {expandedPayments[fee.key] && (
+                            <div className="fee-payment-list">
+                              {paymentsByType[fee.key].map((payment, index) => (
+                                <span key={`${payment.noofinst || index}-${payment.pddt}`}>
+                                  <small>{payment.noofinst ? `Installment ${payment.noofinst}` : `Payment ${index + 1}`}</small>
+                                  <strong>{formatDate(payment.pddt)}</strong>
+                                  <small>Paid: {currency.format(amount(payment.pdfee))}</small>
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
