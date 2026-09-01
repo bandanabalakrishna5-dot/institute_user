@@ -661,18 +661,19 @@ function Login() {
             }
             .login-container-new:before,
             .login-container-new:after {
-              width: 72%;
-              height: 96px;
-              top: -42px;
-              opacity: 0.9;
+              display: none;
             }
             .login-container-new:before {
-              left: -36%;
-              transform: rotate(-12deg);
-            }
-            .login-container-new:after {
-              right: -38%;
-              transform: rotate(25deg);
+              display: block;
+              width: 120%;
+              height: 150px;
+              top: -82px;
+              left: -10%;
+              border: 0;
+              border-radius: 0 0 50% 50%;
+              transform: none;
+              opacity: 1;
+              background: linear-gradient(135deg, #315bea 0%, #2447bd 52%, #31248f 100%);
             }
             .login-page-skyline {
               position: fixed;
