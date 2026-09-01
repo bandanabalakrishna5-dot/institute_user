@@ -70,3 +70,10 @@ export const forgotPassword = async (obj) => {
   );
   return Promise.resolve(finalRes);
 };
+
+export const resetPassword = async (obj) => {
+  const response = await apiPostHelper(`${API_URL}/user-table/reset-password`, obj, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return response.data;
+};

@@ -1,8 +1,16 @@
 import axios from 'axios';
 
+// Attach the server-issued token to every authenticated API request.
+const withAuthentication = (config = {}) => {
+  const token = sessionStorage.getItem('institute-auth-token');
+  return token
+    ? { ...config, headers: { ...config.headers, Authorization: `Bearer ${token}` } }
+    : config;
+};
+
 export const apiPostHelper = async (URL, PAYLOAD, HEADERS) => {
   try {
-    const responseData = await axios.post(URL, PAYLOAD, HEADERS);
+    const responseData = await axios.post(URL, PAYLOAD, withAuthentication(HEADERS));
     return responseData;
   } catch (e) {
     if (!e.response) {
@@ -32,7 +40,7 @@ export const apiPostHelper = async (URL, PAYLOAD, HEADERS) => {
 
 export const apiGetHelper = async (URL, HEADERS_PARAMS) => {
   try {
-    const responseData = await axios.get(URL, HEADERS_PARAMS);
+    const responseData = await axios.get(URL, withAuthentication(HEADERS_PARAMS));
     return responseData;
   } catch (e) {
     if (!e.response) {
@@ -57,7 +65,7 @@ export const apiGetHelper = async (URL, HEADERS_PARAMS) => {
 
 export const apiPutHelper = async (URL, PAYLOAD, HEADERS) => {
   try {
-    const responseData = await axios.put(URL, PAYLOAD, HEADERS);
+    const responseData = await axios.put(URL, PAYLOAD, withAuthentication(HEADERS));
     return responseData;
   } catch (e) {
     if (!e.response) {
@@ -82,7 +90,7 @@ export const apiPutHelper = async (URL, PAYLOAD, HEADERS) => {
 
 export const apiDeleteHelper = async (URL, HEADERS_PARAMS) => {
   try {
-    const responseData = await axios.delete(URL, HEADERS_PARAMS);
+    const responseData = await axios.delete(URL, withAuthentication(HEADERS_PARAMS));
     return responseData;
   } catch (e) {
     if (!e.response) {
@@ -107,7 +115,7 @@ export const apiDeleteHelper = async (URL, HEADERS_PARAMS) => {
 
 export const apiPostFormDataHelper = async (URL, PAYLOAD, HEADERS) => {
   try {
-    const responseData = await axios.post(URL, PAYLOAD, HEADERS);
+    const responseData = await axios.post(URL, PAYLOAD, withAuthentication(HEADERS));
     return responseData;
   } catch (e) {
     if (!e.response) {

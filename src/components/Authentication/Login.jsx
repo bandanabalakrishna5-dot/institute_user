@@ -83,6 +83,8 @@ function Login() {
         type: 'LOGIN',
         payload: {
           user: userData,
+          // All returned student profiles share the same server-issued token.
+          token: userData.token,
           studentProfiles:
             validSessions.length > 1 && validSessions.every((item) => String(item.typ || '').toUpperCase() === 'STUDENT')
               ? validSessions

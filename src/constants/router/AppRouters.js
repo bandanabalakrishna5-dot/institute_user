@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import Login from '../../components/Authentication/Login';
+import ResetPassword from '../../components/Authentication/ResetPassword';
 import StudentProfileSelector from '../../components/Authentication/StudentProfileSelector';
 import DashBoard from '../../components/Dashboard/dashboard';
 import Profile from '../../components/Profile/index';
@@ -28,6 +29,7 @@ export const AppRouters = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/select-student" element={<StudentProfileSelector />} />
         <Route
           path="/dashboard"

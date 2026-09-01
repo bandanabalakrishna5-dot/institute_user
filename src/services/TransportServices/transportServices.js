@@ -25,4 +25,6 @@ export const fetchStudentBusLocation = async (studentId) => {
 export const createBusTrackingSocket = () => io(SOCKET_URL, {
   autoConnect: false,
   transports: ['websocket', 'polling'],
+  // Socket.IO is outside Axios, so pass the same session JWT in its handshake.
+  auth: { token: sessionStorage.getItem('institute-auth-token') || '' },
 });

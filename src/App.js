@@ -6,6 +6,7 @@ export const AuthContext = React.createContext();
 
 const USER_STORAGE_KEY = 'institute-user-session';
 const PROFILES_STORAGE_KEY = 'institute-student-profiles';
+const TOKEN_STORAGE_KEY = 'institute-auth-token';
 
 const clearStoredAuthentication = () => {
   try {
@@ -16,6 +17,7 @@ const clearStoredAuthentication = () => {
   }
   localStorage.removeItem(USER_STORAGE_KEY);
   localStorage.removeItem(PROFILES_STORAGE_KEY);
+  sessionStorage.removeItem(TOKEN_STORAGE_KEY);
 };
 
 const getInitialState = () => {
@@ -32,11 +34,14 @@ const initialStateAuth = getInitialState();
 const reducerAuth = (state, action) => {
   switch (action.type) {
     case 'LOGIN':
+      // Keep the JWT for this browser session so API helpers can authenticate requests.
+      sessionStorage.setItem(TOKEN_STORAGE_KEY, action.payload.token || '');
       return {
         ...state,
         isAuthenticated: true,
         user: action.payload.user,
         studentProfiles: action.payload.studentProfiles || [],
+        token: action.payload.token || '',
       };
     case 'SELECT_STUDENT':
       return {
@@ -49,12 +54,14 @@ const reducerAuth = (state, action) => {
       secureLocalStorage.clear();
       localStorage.removeItem(USER_STORAGE_KEY);
       localStorage.removeItem(PROFILES_STORAGE_KEY);
+      sessionStorage.removeItem(TOKEN_STORAGE_KEY);
       localStorage.clear();
       return {
         ...state,
         isAuthenticated: false,
         user: {},
         studentProfiles: [],
+        token: '',
       };
     default:
       return state;
