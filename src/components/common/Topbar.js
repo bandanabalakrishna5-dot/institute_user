@@ -25,6 +25,7 @@ import {
   FaDollarSign,
   FaChevronRight,
   FaStickyNote,
+  FaKey,
 } from 'react-icons/fa';
 import { AuthContext } from '../../App';
 import {
@@ -79,6 +80,7 @@ const RoleLabels = {
 // Quick-action menu items per role
 const STUDENT_MENU = [
   { label: 'My Profile',    icon: <FaUserGraduate />,    path: '/profile',       color: '#eff6ff', iconColor: '#2f54eb', perm: USER_PORTAL_PERMISSIONS.PROFILE },
+  { label: 'Change Password', icon: <FaKey />,            path: '/change-password', color: '#fff7ed', iconColor: '#ea580c' },
   { label: 'Timetable',     icon: <FaCalendarAlt />,     path: '/timetable',     color: '#fdf4ff', iconColor: '#9333ea', perm: USER_PORTAL_PERMISSIONS.TIMETABLE },
   { label: 'Homework',      icon: <FaBookOpen />,        path: '/homework',      color: '#f0fdf4', iconColor: '#16a34a', perm: USER_PORTAL_PERMISSIONS.HOMEWORK_ACCESS },
   { label: 'Notes',         icon: <FaStickyNote />,      path: '/notes',         color: '#f5f3ff', iconColor: '#7c3aed', perm: USER_PORTAL_PERMISSIONS.STUDY_MATERIALS },
@@ -90,6 +92,7 @@ const STUDENT_MENU = [
 
 const STAFF_MENU = [
   { label: 'My Profile',    icon: <FaChalkboardTeacher />, path: '/staff-profile',  color: '#eff6ff', iconColor: '#2f54eb', perm: USER_PORTAL_PERMISSIONS.PROFILE },
+  { label: 'Change Password', icon: <FaKey />,              path: '/change-password', color: '#fff7ed', iconColor: '#ea580c' },
   { label: 'Timetable',     icon: <FaCalendarAlt />,       path: '/timetable',      color: '#fdf4ff', iconColor: '#9333ea', perm: USER_PORTAL_PERMISSIONS.TIMETABLE },
   { label: 'Students',      icon: <FaUsers />,             path: '/students',       color: '#f0fdf4', iconColor: '#16a34a', perm: USER_PORTAL_PERMISSIONS.STUDENTS },
   { label: 'Attendance',    icon: <FaClipboardList />,     path: '/attendance',     color: '#fff7ed', iconColor: '#ea580c', perm: USER_PORTAL_PERMISSIONS.ATTENDANCE },

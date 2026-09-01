@@ -7,7 +7,6 @@ import { AuthContext } from '../../App';
 import { fetchStaffProfileById } from '../../services/LoginServices/loginServices';
 
 const StaffLabels = {
-  stfid: 'Staff ID',
   stfnm: 'Staff Name',
   stfrolid: 'Roll ID',
   dob: 'Date of Birth',

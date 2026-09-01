@@ -19,6 +19,7 @@ import NotificationsPage from '../../components/Notifications/NotificationsPage'
 import StudentBusTrackingPage from '../../components/Transport/StudentBusTrackingPage';
 import HolidaysPage from '../../components/Holidays/HolidaysPage';
 import NotesPage from '../../components/Notes/NotesPage';
+import ChangePasswordPage from '../../components/Authentication/ChangePasswordPage';
 import { ClassesPlaceholder, StudentsPlaceholder } from '../../components/Placeholder/index';
 import { USER_PORTAL_PERMISSIONS } from '../../services/commonUtills/FormValidations';
 
@@ -58,6 +59,7 @@ export const AppRouters = () => {
             </ProtectedRoute>
           }
         />
+        <Route path="/change-password" element={<ProtectedRoute userTypes={['STUDENT', 'STAFF']}><ChangePasswordPage /></ProtectedRoute>} />
         <Route
           path="/homework"
           element={
