@@ -116,7 +116,7 @@ function StudentDashboard({ user }) {
         </div>
         <Card className="feed-card staff-timetable-card student-classes-card mb-4">
           <Card.Body className={todayClasses.length ? 'staff-timetable-preview' : 'text-center text-muted'}>
-            {classesLoading ? <div className="student-classes-empty"><Spinner animation="border" size="sm" /><small>Loading today’s classes...</small></div> : todayClasses.length ? todayClasses.slice(0, 4).map((period, index) => <div className="staff-timetable-row" key={period.clsprid || index}><span className="staff-period-badge"><FaClock /> {formatPeriodLabel(period, index)}</span><span className="staff-period-copy"><strong>{period.subnm || period.subcd || 'Subject'}</strong><small>{period.clsnm}{period.secnm ? ` · ${period.secnm}` : ''}</small></span></div>) : <div className="student-classes-empty">
+            {classesLoading ? <div className="student-classes-empty"><Spinner animation="border" size="sm" /><small>Loading today’s classes...</small></div> : todayClasses.length ? todayClasses.slice(0, 6).map((period, index) => <div className="staff-timetable-row" key={period.clsprid || index}><span className="staff-period-badge"><FaClock /> {formatPeriodLabel(period, index)}</span><span className="staff-period-copy"><strong>{period.subnm || period.subcd || 'Subject'}</strong><small>{period.clsnm}{period.secnm ? ` · ${period.secnm}` : ''}</small></span></div>) : <div className="student-classes-empty">
               <span><FaCalendarAlt /></span>
               <strong>No classes scheduled</strong>
               <small>Your timetable is clear for today.</small>

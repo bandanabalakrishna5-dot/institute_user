@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Alert, Spinner } from 'react-bootstrap';
-import { FaArrowLeft, FaBell, FaBus, FaClock, FaCrosshairs, FaMapMarkerAlt, FaSchool, FaUser } from 'react-icons/fa';
+import { FaArrowLeft, FaBell, FaBus, FaClock, FaCrosshairs, FaMapMarkerAlt, FaUser } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../App';
 import {
@@ -14,10 +14,22 @@ import './StudentBusTrackingPage.css';
 const liveMapIcon = (symbol, label) => L.divIcon({
   className: 'live-map-marker-wrap',
   html: `<span class="live-map-marker" role="img" aria-label="${label}">${symbol}</span>`,
-  iconSize: [44, 44],
-  iconAnchor: [22, 22],
-  popupAnchor: [0, -24],
+  iconSize: [34, 34],
+  iconAnchor: [17, 17],
+  popupAnchor: [0, -19],
 });
+
+const distanceInKm = (from, to) => {
+  if (!from || !to) return null;
+  const radians = (degrees) => (Number(degrees) * Math.PI) / 180;
+  const earthRadiusKm = 6371;
+  const latitudeDelta = radians(to.lat - from.lat);
+  const longitudeDelta = radians(to.lng - from.lng);
+  const value = Math.sin(latitudeDelta / 2) ** 2
+    + Math.cos(radians(from.lat)) * Math.cos(radians(to.lat))
+    * Math.sin(longitudeDelta / 2) ** 2;
+  return earthRadiusKm * 2 * Math.atan2(Math.sqrt(value), Math.sqrt(1 - value));
+};
 
 function LiveTrackingMap({ busLocation, studentLocation, schoolLocation }) {
   const containerRef = useRef(null);
@@ -282,10 +294,6 @@ function StudentBusTrackingPage() {
   }, []);
 
   const coordinatesAvailable = location?.lat != null && location?.lng != null;
-  const formatCoordinate = (value) => {
-    const coordinate = Number(value);
-    return Number.isFinite(coordinate) ? coordinate.toFixed(5) : '--';
-  };
   const schoolLatitude = Number(user.latitude);
   const schoolLongitude = Number(user.longitude);
   const schoolLocation = String(user.latitude ?? '').trim() !== ''
@@ -301,6 +309,13 @@ function StudentBusTrackingPage() {
   const arrivalText = location?.eta != null
     ? `Arriving in ${location.eta} minute${Number(location.eta) === 1 ? '' : 's'}`
     : connected ? 'Bus is on the way' : 'Waiting for live updates';
+  const busDistance = distanceInKm(
+    studentLocation,
+    coordinatesAvailable ? { lat: Number(location.lat), lng: Number(location.lng) } : null,
+  );
+  const distanceText = busDistance == null
+    ? 'Calculating…'
+    : busDistance < 1 ? `${Math.round(busDistance * 1000)} m` : `${busDistance.toFixed(1)} km`;
   const showRouteToBus = () => {
     if (!navigator.geolocation) {
       setRouteError('Location access is not supported on this device.');
@@ -348,36 +363,17 @@ function StudentBusTrackingPage() {
 
             <div className={`bus-tracking-live-pill ${connected ? 'connected' : ''}`}><span /> {connected ? 'LIVE' : 'OFFLINE'}</div>
 
-            <div className="bus-tracking-location-status" aria-label="Student, bus, and school locations">
-              <div className={`bus-tracking-location-item ${studentLocation ? '' : 'is-waiting'}`}>
-                <span className="bus-tracking-blue-marker"><FaUser /></span>
-                <span><small>MY PRESENT LOCATION</small><strong>{studentLocation ? `${formatCoordinate(studentLocation.lat)}, ${formatCoordinate(studentLocation.lng)}` : 'Fetching current location…'}</strong></span>
-              </div>
-              <span aria-hidden="true" style={{ width: 3, height: 13, margin: '-7px 0 -7px 16px', borderRadius: 999, background: '#0867df' }} />
-              <div className="bus-tracking-location-item">
-                <span className="bus-tracking-blue-marker"><FaBus /></span>
-                <span><small>BUS LOCATION</small><strong>{formatCoordinate(location.lat)}, {formatCoordinate(location.lng)}</strong></span>
-              </div>
-              <span aria-hidden="true" style={{ width: 3, height: 13, margin: '-7px 0 -7px 16px', borderRadius: 999, background: '#0867df' }} />
-              <div className={`bus-tracking-location-item ${schoolLocation ? '' : 'is-unavailable'}`}>
-                <span className="bus-tracking-blue-marker"><FaSchool /></span>
-                <span><small>SCHOOL LOCATION</small><strong>{schoolLocation ? `${formatCoordinate(schoolLocation.lat)}, ${formatCoordinate(schoolLocation.lng)}` : 'Not available in login response'}</strong></span>
-              </div>
-            </div>
-
             {coordinatesAvailable && <button type="button" className="bus-tracking-locate" onClick={showRouteToBus} disabled={routeLoading} aria-label="Refresh my location">{routeLoading ? <Spinner animation="border" size="sm" /> : <FaCrosshairs />}</button>}
 
             {error && <Alert variant="warning" className="bus-tracking-overlay-alert">{error}</Alert>}
             {routeError && <Alert variant="warning" className="bus-tracking-overlay-alert route-error">{routeError}</Alert>}
 
             <section className="bus-tracking-info-card">
-              <div className="bus-tracking-vehicle-avatar">
-                {location.vhlurl ? <img src={location.vhlurl} alt="Assigned bus" /> : <FaBus />}
-              </div>
               <div className="bus-tracking-info-copy">
-                <div><FaBus /><strong>Bus No: <span>{location.vhlno || 'Assigned vehicle'}</span></strong></div>
-                <div><FaUser /><strong>Driver: <span>{location.drvnm || 'Assigned driver'}</span></strong></div>
-                <div className="bus-tracking-arrival"><FaClock /><strong>{arrivalText}</strong></div>
+                <div><FaBus /><strong>Van No: <span>{location.vhlno || 'Assigned vehicle'}</span></strong></div>
+                <div><FaUser /><strong>Name: <span>{location.drvnm || 'Assigned driver'}</span></strong></div>
+                <div><FaMapMarkerAlt /><strong>Distance: <span>{distanceText}</span></strong></div>
+                <div className="bus-tracking-arrival"><FaClock /><strong>Time: <span>{arrivalText}</span></strong></div>
               </div>
               {location.updt && <small className="bus-tracking-updated">Updated {new Date(location.updt).toLocaleString()}</small>}
             </section>

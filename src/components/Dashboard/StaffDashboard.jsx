@@ -227,7 +227,7 @@ function StaffDashboard({ user }) {
         </div>
         <Card className="feed-card staff-timetable-card mb-4">
           <Card.Body className={todayPeriods.length ? 'staff-timetable-preview' : 'text-center text-muted'}>
-            {timetableLoading ? <div className="py-3"><Spinner animation="border" size="sm" /> Loading timetable...</div> : todayPeriods.length ? todayPeriods.slice(0, 4).map((period, index) => <button type="button" className="staff-timetable-row" key={period.clsprid || index} onClick={() => navigate('/timetable')}><span className="staff-period-badge"><FaClock /> {formatPeriodLabel(period, index)}</span><span className="staff-period-copy"><strong>{period.subnm || period.subcd || 'Subject'}</strong><small>{period.clsnm}{period.secnm ? ` · ${period.secnm}` : ''}</small></span><FaChevronRight className="staff-period-arrow" /></button>) : <div className="py-3">No classes assigned for today</div>}
+            {timetableLoading ? <div className="py-3"><Spinner animation="border" size="sm" /> Loading timetable...</div> : todayPeriods.length ? todayPeriods.slice(0, 6).map((period, index) => <button type="button" className="staff-timetable-row" key={period.clsprid || index} onClick={() => navigate('/timetable')}><span className="staff-period-badge"><FaClock /> {formatPeriodLabel(period, index)}</span><span className="staff-period-copy"><strong>{period.subnm || period.subcd || 'Subject'}</strong><small>{period.clsnm}{period.secnm ? ` · ${period.secnm}` : ''}</small></span><FaChevronRight className="staff-period-arrow" /></button>) : <div className="py-3">No classes assigned for today</div>}
           </Card.Body>
         </Card>
         </>}
