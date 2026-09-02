@@ -32,6 +32,11 @@ body,
 }
 
 body {
+  min-height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior-y: none;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     sans-serif;
@@ -49,6 +54,7 @@ a {
 .user-portal-layout {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .user-portal-main {
@@ -60,6 +66,7 @@ a {
 
 .user-portal-content {
   flex: 1;
+  min-height: 0;
   padding: 0;
   /* room for fixed bottom nav */
   padding-bottom: 84px;

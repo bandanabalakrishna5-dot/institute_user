@@ -1,0 +1,3 @@
+# Serve the React app shell for every client-side route. This prevents direct
+# links and mobile refreshes (for example /dashboard) from returning an error.
+/*    /index.html   200
