@@ -1,4 +1,4 @@
-const CACHE_NAME = 'institute-user-v5';
+const CACHE_NAME = 'institute-user-v6';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -9,7 +9,12 @@ const APP_SHELL = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
+  // Do not let one missing optional icon prevent index.html from being cached.
+  // A failed addAll() leaves a newly installed worker without a navigation
+  // fallback, which Android Chrome reports as ERR_FAILED on routed URLs.
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => Promise.allSettled(
+    APP_SHELL.map((url) => cache.add(url))
+  )));
   self.skipWaiting();
 });
 
@@ -27,9 +32,35 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) return;
 
   if (request.mode === 'navigate') {
-    event.respondWith(fetch(request)
-      .then((response) => (response.ok ? response : caches.match('/index.html')))
-      .catch(() => caches.match('/index.html')));
+    event.respondWith((async () => {
+      try {
+        const response = await fetch(request);
+        if (response && response.ok) return response;
+      } catch (error) {
+        // The cached app shell below handles temporary mobile/network failures.
+      }
+
+      const cachedShell = await caches.match('/index.html', { ignoreSearch: true });
+      if (cachedShell) return cachedShell;
+
+      // Always return a valid Response. Returning undefined from respondWith()
+      // causes Chrome's generic ERR_FAILED page on every client-side route.
+      try {
+        const shellResponse = await fetch('/index.html', { cache: 'no-store' });
+        if (shellResponse && shellResponse.ok) {
+          const cache = await caches.open(CACHE_NAME);
+          await cache.put('/index.html', shellResponse.clone());
+          return shellResponse;
+        }
+      } catch (error) {
+        // Fall through to a small offline response instead of browser ERR_FAILED.
+      }
+
+      return new Response(
+        '<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Institute App</title><main style="font-family:sans-serif;padding:24px"><h1>You are offline</h1><p>Please check your connection and try again.</p><button onclick="location.reload()">Try again</button></main>',
+        { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8' } }
+      );
+    })());
     return;
   }
 
