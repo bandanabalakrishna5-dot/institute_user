@@ -1245,6 +1245,11 @@ textarea.form-control {
 .attendance-student-copy strong { color: #0f172a; }
 .attendance-student-copy span { color: #64748b; font-size: 0.82rem; }
 .attendance-card select { width: 150px; min-width: 150px; }
+.attendance-status-buttons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); flex: 0 0 174px; gap: 5px; padding: 4px; border: 1px solid #dbe3ef; border-radius: 12px; background: #f8fafc; }
+.attendance-status-buttons button { min-width: 0; padding: 8px 7px; border: 0; border-radius: 8px; background: transparent; color: #64748b; font-size: .72rem; font-weight: 800; transition: background .15s ease, color .15s ease, box-shadow .15s ease; }
+.attendance-status-buttons button.selected { background: #2563eb; color: #fff; box-shadow: 0 4px 10px rgba(37, 99, 235, .22); }
+.attendance-status-buttons button.absent.selected { background: #ef4444; box-shadow: 0 4px 10px rgba(239, 68, 68, .2); }
+.attendance-status-buttons button.firsthalf.selected { background: #f59e0b; box-shadow: 0 4px 10px rgba(245, 158, 11, .2); }
 
 .attendance-empty {
   min-height: 180px;
@@ -1342,6 +1347,7 @@ textarea.form-control {
   .attendance-card { align-items: stretch; flex-direction: column; }
   .attendance-card select { width: 100%; max-width: none; }
   .attendance-status-select { width: 100%; flex-basis: auto; }
+  .attendance-status-buttons { width: 100%; flex-basis: auto; }
   .staff-attendance-option { gap: 7px; padding: 9px; }
   .staff-attendance-option > span { width: 30px; height: 30px; flex-basis: 30px; }
 }
@@ -1434,6 +1440,7 @@ textarea.form-control {
 .attendance-calendar-legend i { width: 10px; height: 10px; border-radius: 50%; }
 .attendance-calendar-legend .present { background: #22c55e; }
 .attendance-calendar-legend .absent { background: #ef4444; }
+.attendance-calendar-legend .half-day { background: linear-gradient(90deg, #22c55e 0 50%, #ef4444 50% 100%); }
 .attendance-calendar-card { padding: 16px; border: 1px solid #e2e8f0; border-radius: 16px; background: #fff; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05); }
 .attendance-calendar-card h2 { margin: 0 0 14px; color: #0f172a; font-size: 16px; font-weight: 800; }
 .attendance-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 7px; }
@@ -1441,6 +1448,9 @@ textarea.form-control {
 .attendance-calendar-day { aspect-ratio: 1; display: grid; place-items: center; border-radius: 9px; color: #fff; font-size: 12px; font-weight: 800; }
 .attendance-calendar-day.present { background: #22c55e; }
 .attendance-calendar-day.absent { background: #ef4444; }
+.attendance-calendar-day.first-half-present { background: linear-gradient(90deg, #22c55e 0 50%, #ef4444 50% 100%); }
+.attendance-calendar-day.second-half-present { background: linear-gradient(90deg, #ef4444 0 50%, #22c55e 50% 100%); }
+.attendance-calendar-day.partial { background: linear-gradient(90deg, #22c55e 0 50%, #ef4444 50% 100%); }
 .attendance-calendar-day.upcoming { border: 1px solid #e2e8f0; background: #fff; color: #94a3b8; }
 
 @media (max-width: 420px) {

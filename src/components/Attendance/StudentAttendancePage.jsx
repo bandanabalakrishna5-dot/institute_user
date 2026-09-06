@@ -23,6 +23,36 @@ const MONTHS = {
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
+const getAttendanceState = (status) => {
+  const periods = String(status ?? '').split('-').filter((value) => value === '0' || value === '1');
+
+  if (periods.length <= 1) {
+    return status === '1'
+      ? { className: 'present', label: 'Present' }
+      : { className: 'absent', label: 'Absent' };
+  }
+
+  if (periods.every((period) => period === '1')) {
+    return { className: 'present', label: 'Present' };
+  }
+  if (periods.every((period) => period === '0')) {
+    return { className: 'absent', label: 'Absent' };
+  }
+
+  const midpoint = Math.floor(periods.length / 2);
+  const firstHalfPresent = periods.slice(0, midpoint).every((period) => period === '1');
+  const secondHalfPresent = periods.slice(midpoint).every((period) => period === '1');
+
+  if (firstHalfPresent && !secondHalfPresent) {
+    return { className: 'first-half-present', label: 'First half present, second half absent' };
+  }
+  if (!firstHalfPresent && secondHalfPresent) {
+    return { className: 'second-half-present', label: 'First half absent, second half present' };
+  }
+
+  return { className: 'partial', label: 'Partially present' };
+};
+
 const getMonthDetails = (monthRecord, academicYear) => {
   const key = Object.keys(MONTHS).find((month) => Object.prototype.hasOwnProperty.call(monthRecord, month));
   if (!key) return null;
@@ -154,6 +184,7 @@ function StudentAttendancePage() {
                 <div className="attendance-calendar-legend" aria-label="Attendance legend">
                   <span><i className="present" /> Present</span>
                   <span><i className="absent" /> Absent</span>
+                  <span><i className="half-day" /> Half day</span>
                 </div>
               </div>
 
@@ -168,12 +199,15 @@ function StudentAttendancePage() {
                       {displayedMonth.statuses.map((status, index) => {
                         const date = new Date(displayedMonth.year, MONTHS[displayedMonth.key].number, index + 1);
                         const upcoming = date > new Date();
-                        const state = upcoming ? 'upcoming' : (status === '1' ? 'present' : 'absent');
+                        const attendanceState = getAttendanceState(status);
+                        const state = upcoming ? 'upcoming' : attendanceState.className;
+                        const stateLabel = upcoming ? 'Upcoming' : attendanceState.label;
                         return (
                           <span
                             className={`attendance-calendar-day ${state}`}
                             key={`${displayedMonth.key}-${index + 1}`}
-                            title={`${displayedMonth.name} ${index + 1}: ${upcoming ? 'Upcoming' : (status === '1' ? 'Present' : 'Absent')}`}
+                            title={`${displayedMonth.name} ${index + 1}: ${stateLabel}`}
+                            aria-label={`${displayedMonth.name} ${index + 1}: ${stateLabel}`}
                           >
                             {index + 1}
                           </span>

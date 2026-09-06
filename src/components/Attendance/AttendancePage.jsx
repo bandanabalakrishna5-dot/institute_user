@@ -16,9 +16,9 @@ import {
 } from '../../services/HomeworkServices/homeworkServices';
 
 const attendanceOptions = [
-  { value: 'FIRSTHALF', label: 'First half' },
   { value: 'ABSENT', label: 'Absent' },
-  { value: 'FULLDAY', label: 'Full day' },
+  { value: 'FIRSTHALF', label: 'Half' },
+  { value: 'FULLDAY', label: 'Full' },
 ];
 
 const statusFromPeriods = (periods = '') => {
@@ -191,7 +191,19 @@ function AttendancePage() {
                     <strong>{student.stdnm || `Student ${student.stdid}`}</strong>
                     <span>{[student.clsnm, student.secnm].filter(Boolean).join(' • ')}</span>
                   </div>
-                  <CustomSelect className="attendance-status-select" options={attendanceOptions} value={statuses[student.stdid] || ''} onChange={(value) => setStatuses((current) => ({ ...current, [student.stdid]: value }))} placeholder="Select attendance" allowEmpty={false} ariaLabel={`Attendance for ${student.stdnm}`} />
+                  <div className="attendance-status-buttons" role="group" aria-label={`Attendance for ${student.stdnm || `Student ${student.stdid}`}`}>
+                    {attendanceOptions.map((option) => (
+                      <button
+                        type="button"
+                        key={option.value}
+                        className={`${option.value.toLowerCase()} ${statuses[student.stdid] === option.value ? 'selected' : ''}`}
+                        onClick={() => setStatuses((current) => ({ ...current, [student.stdid]: option.value }))}
+                        aria-pressed={statuses[student.stdid] === option.value}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </article>
               ))}
             </div>
