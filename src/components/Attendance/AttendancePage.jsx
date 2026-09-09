@@ -8,6 +8,7 @@ import SectionSelect from '../common/SectionSelect';
 import CustomSelect from '../common/CustomSelect';
 import {
   fetchStudentAttendance,
+  sendStudentAbsentNotification,
   updateStudentAttendance,
 } from '../../services/AttendanceServices/attendanceServices';
 import {
@@ -132,8 +133,31 @@ function AttendancePage() {
     if (response?.status === 'success') {
       const updateResults = Array.isArray(response.payload)
         ? response.payload
-        : [];
+        : Array.isArray(response.payload?.results) ? response.payload.results : [];
       const failed = updateResults.filter((item) => item?.status === false);
+
+      const successfulStudentIds = new Set(
+        updateResults.filter((item) => item?.status === true).map((item) => Number(item.stdid))
+      );
+      const absentStudents = students.filter((student) =>
+        statuses[student.stdid] === 'ABSENT' && successfulStudentIds.has(Number(student.stdid))
+      );
+      if (absentStudents.length) {
+        Promise.allSettled(absentStudents.map((student) => sendStudentAbsentNotification({
+          stdid: student.stdid,
+          date: new Date().toISOString().slice(0, 10),
+          acdmcyr: student.acdmcyr || user.acdmcyr,
+          usrid: user.usrid,
+        }))).then((notificationResults) => {
+          const notificationFailures = notificationResults.filter((result) =>
+            result.status === 'rejected' || result.value?.status !== 'success'
+          );
+          if (notificationFailures.length) {
+            console.error('Some absence notifications could not be sent.');
+          }
+        });
+      }
+
       setAlert({
         variant: failed.length ? 'warning' : 'success',
         message: failed.length

@@ -1,4 +1,19 @@
 import axios from 'axios';
+import { getStoredAccessToken } from '../Authentication/sessionStorage';
+
+axios.interceptors.request.use((config) => {
+  const token = getStoredAccessToken();
+  if (token && !config.headers['x-access-token']) config.headers['x-access-token'] = token;
+  return config;
+});
+
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401) window.dispatchEvent(new Event('institute-auth-invalid'));
+    return Promise.reject(error);
+  }
+);
 
 export const apiPostHelper = async (URL, PAYLOAD, HEADERS) => {
   try {

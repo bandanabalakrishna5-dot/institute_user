@@ -7,6 +7,7 @@ import { BsShield } from 'react-icons/bs';
 import { emailValidation } from '../../services/commonUtills/FormValidations';
 import { AuthContext } from '../../App';
 import InstallAppButton from '../common/InstallAppButton';
+import { enablePushNotifications } from '../../services/NotificationServices/pushNotificationServices';
 
 const initialState = {
   emlid: '',
@@ -89,6 +90,7 @@ function Login() {
               : [],
         },
       });
+      enablePushNotifications(userData).catch(() => {});
       navigate(validSessions.length > 1 ? '/select-student' : '/dashboard');
     } else {
       setAlertShow(true);

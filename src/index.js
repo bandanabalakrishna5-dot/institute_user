@@ -18,7 +18,20 @@ root.render(<App />);
 // Keep the service worker out of development so local code changes never use stale bundles.
 if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register(`${process.env.PUBLIC_URL}/service-worker.js`).catch((error) => {
+    navigator.serviceWorker.register(`${process.env.PUBLIC_URL}/service-worker.js`).then((registration) => {
+      const announceUpdate = (worker) => {
+        window.__instituteWaitingServiceWorker = worker;
+        window.dispatchEvent(new CustomEvent('institute-app-update-available', { detail: { worker } }));
+      };
+      if (registration.waiting && navigator.serviceWorker.controller) announceUpdate(registration.waiting);
+      registration.addEventListener('updatefound', () => {
+        const worker = registration.installing;
+        worker?.addEventListener('statechange', () => {
+          if (worker.state === 'installed' && navigator.serviceWorker.controller) announceUpdate(worker);
+        });
+      });
+      registration.update().catch(() => {});
+    }).catch((error) => {
       console.error('Service worker registration failed:', error);
     });
   });

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'institute-user-v6';
+const CACHE_NAME = 'institute-user-v7';
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -15,7 +15,10 @@ self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => Promise.allSettled(
     APP_SHELL.map((url) => cache.add(url))
   )));
-  self.skipWaiting();
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
@@ -82,17 +85,22 @@ self.addEventListener('push', (event) => {
   } catch (error) {
     data = { body: event.data?.text() || 'You have a new update.' };
   }
-  event.waitUntil(self.registration.showNotification(data.title || 'Institute App', {
-    body: data.body || 'You have a new update.',
-    icon: '/icons/app-icon-192.png',
-    badge: '/icons/app-icon-192.png',
-    tag: data.tag || 'institute-notification',
-    data: { url: data.url || '/notifications' },
-    silent: false,
-    renotify: true,
-    timestamp: Date.now(),
-    vibrate: [180, 80, 180],
-  }));
+  const tag = data.tag || 'institute-notification';
+  event.waitUntil((async () => {
+    const visibleNotifications = await self.registration.getNotifications({ tag });
+    if (visibleNotifications.length) return;
+    await self.registration.showNotification(data.title || 'Institute App', {
+      body: data.body || 'You have a new update.',
+      icon: '/icons/app-icon-192.png',
+      badge: '/icons/app-icon-192.png',
+      tag,
+      data: { url: data.url || '/notifications' },
+      silent: false,
+      renotify: false,
+      timestamp: Date.now(),
+      vibrate: [180, 80, 180],
+    });
+  })());
 });
 
 self.addEventListener('notificationclick', (event) => {

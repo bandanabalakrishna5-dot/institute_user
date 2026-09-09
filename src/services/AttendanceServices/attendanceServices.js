@@ -1,4 +1,4 @@
-import { apiGetHelper, apiPutHelper } from '../commonUtills/helperAxios';
+import { apiGetHelper, apiPostHelper, apiPutHelper } from '../commonUtills/helperAxios';
 
 const API_URL = process.env.REACT_APP_SCHOOL_BACKEND_URL;
 
@@ -32,6 +32,13 @@ export const updateStudentAttendance = async (payload) => {
     finalRes = response.data;
   });
   return Promise.resolve(finalRes);
+};
+
+export const sendStudentAbsentNotification = async (payload) => {
+  const response = await apiPostHelper(`${API_URL}/attendance/absent-notification`, payload, {
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return response.data;
 };
 
 export const fetchStaffAttendance = fetchStudentAttendance;

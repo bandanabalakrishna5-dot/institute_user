@@ -23,6 +23,9 @@ const getNotificationSource = (type) => ({
   INSTITUTE: 'Institute',
 }[String(type || '').toUpperCase()] || 'Institute');
 
+const getStudentNotificationSource = (item) =>
+  String(item?.hdng || '').toUpperCase().includes('ATTENDANCE') ? 'Attendance' : 'Homework';
+
 const getIndiaTodayKey = () => {
   const parts = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Asia/Kolkata',
@@ -73,7 +76,7 @@ function NotificationsPage() {
     const combined = successfulResponses.flatMap(({ response, index }) =>
       unwrapList(response).map((item) => ({
         ...item,
-        notificationSource: index === 1 ? 'Homework' : getNotificationSource(item.typ),
+        notificationSource: index === 1 ? getStudentNotificationSource(item) : getNotificationSource(item.typ),
       })),
     );
     const todayKey = getIndiaTodayKey();

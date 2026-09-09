@@ -156,7 +156,7 @@ function Topbar() {
       || !user.usrid
       || !['STAFF', 'STUDENT'].includes(typ)
       || !('Notification' in window)
-      || Notification.permission !== 'granted') return;
+      || Notification.permission === 'denied') return;
     pushRegistrationAttemptedRef.current = true;
     enablePushNotifications({
       usrid: user.usrid,
