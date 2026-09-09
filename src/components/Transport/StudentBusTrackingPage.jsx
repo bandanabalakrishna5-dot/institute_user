@@ -294,6 +294,7 @@ function StudentBusTrackingPage() {
   }, []);
 
   const coordinatesAvailable = location?.lat != null && location?.lng != null;
+  const driverIsLive = connected && Number(location?.gpssts) === 1;
   const schoolLatitude = Number(user.latitude);
   const schoolLongitude = Number(user.longitude);
   const schoolLocation = String(user.latitude ?? '').trim() !== ''
@@ -308,7 +309,7 @@ function StudentBusTrackingPage() {
     : null;
   const arrivalText = location?.eta != null
     ? `Arriving in ${location.eta} minute${Number(location.eta) === 1 ? '' : 's'}`
-    : connected ? 'Bus is on the way' : 'Waiting for live updates';
+    : driverIsLive ? 'Bus is on the way' : 'Waiting for live updates';
   const busDistance = distanceInKm(
     studentLocation,
     coordinatesAvailable ? { lat: Number(location.lat), lng: Number(location.lng) } : null,
@@ -361,7 +362,7 @@ function StudentBusTrackingPage() {
           <div className="bus-tracking-map-stage">
             {mapSnapshot?.bus ? <LiveTrackingMap busLocation={mapSnapshot.bus} studentLocation={mapSnapshot.student} schoolLocation={schoolLocation} /> : <div className="bus-tracking-map-empty"><FaMapMarkerAlt /><span>Bus coordinates are unavailable</span></div>}
 
-            <div className={`bus-tracking-live-pill ${connected ? 'connected' : ''}`}><span /> {connected ? 'LIVE' : 'OFFLINE'}</div>
+            <div className={`bus-tracking-live-pill ${driverIsLive ? 'connected' : ''}`}><span /> {driverIsLive ? 'LIVE' : 'OFFLINE'}</div>
 
             {coordinatesAvailable && <button type="button" className="bus-tracking-locate" onClick={showRouteToBus} disabled={routeLoading} aria-label="Refresh my location">{routeLoading ? <Spinner animation="border" size="sm" /> : <FaCrosshairs />}</button>}
 

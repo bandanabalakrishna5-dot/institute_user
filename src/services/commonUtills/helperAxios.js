@@ -1,6 +1,31 @@
 import axios from 'axios';
 import { getSessionToken, invalidateAuthSession, loadAuthSession } from '../Authentication/authSession';
 
+export const API_SUCCESS_EVENT = 'institute-api-success';
+
+const silentMutationPaths = [
+  '/B2C-login',
+  '/gps-location',
+  '/absent-notification',
+  '/push-subscribe',
+  '/push-unsubscribe',
+  '/files/upload',
+];
+
+const announceSuccessfulMutation = (response) => {
+  const method = String(response?.config?.method || '').toLowerCase();
+  const url = String(response?.config?.url || '');
+  if (!['post', 'put', 'patch', 'delete'].includes(method)) return;
+  if (silentMutationPaths.some((path) => url.includes(path))) return;
+  if (response?.data?.status === 'error' || response?.data?.errors?.length) return;
+
+  const serverMessage = response?.data?.payload?.message || response?.data?.message;
+  const fallback = method === 'delete' ? 'Deleted successfully.' : 'Saved successfully.';
+  window.dispatchEvent(new CustomEvent(API_SUCCESS_EVENT, {
+    detail: { message: typeof serverMessage === 'string' ? serverMessage : fallback },
+  }));
+};
+
 axios.interceptors.request.use((config) => {
   const token = getSessionToken(loadAuthSession());
   if (token && !config.headers.Authorization && !config.headers['x-access-token']) {
@@ -11,7 +36,10 @@ axios.interceptors.request.use((config) => {
 });
 
 axios.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    announceSuccessfulMutation(response);
+    return response;
+  },
   (error) => {
     if (error?.response?.status === 401) invalidateAuthSession();
     return Promise.reject(error);

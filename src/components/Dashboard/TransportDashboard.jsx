@@ -11,12 +11,16 @@ import {
 import { saveDriverGpsLocation } from '../../services/TransportServices/transportServices';
 import { getIndiaGreeting } from './dashboardGreeting';
 
+const ACTIVE_TRACKING_KEY = 'institute-driver-gps-active';
+const PENDING_LOCATION_KEY = 'institute-driver-gps-pending';
+
 function TransportDashboard({ user }) {
   const gpsWatchRef = useRef(null);
   const gpsIntervalRef = useRef(null);
   const latestPositionRef = useRef(null);
   const requestInFlightRef = useRef(false);
   const gpsActiveRef = useRef(false);
+  const wakeLockRef = useRef(null);
   const [gpsEnabled, setGpsEnabled] = useState(false);
   const [gpsBusy, setGpsBusy] = useState(false);
   const [gpsMessage, setGpsMessage] = useState(null);
@@ -24,21 +28,42 @@ function TransportDashboard({ user }) {
   useEffect(() => () => {
     if (gpsWatchRef.current !== null) navigator.geolocation.clearWatch(gpsWatchRef.current);
     if (gpsIntervalRef.current !== null) clearInterval(gpsIntervalRef.current);
+    wakeLockRef.current?.release().catch(() => {});
   }, []);
 
+  const requestWakeLock = async () => {
+    if (!('wakeLock' in navigator) || document.visibilityState !== 'visible') return;
+    try {
+      wakeLockRef.current = await navigator.wakeLock.request('screen');
+    } catch (_) {
+      // Wake Lock is best-effort; GPS recovery still runs when the app resumes.
+    }
+  };
+
   const sendPosition = async (position, gpsStatus = 1) => {
+    const { latitude, longitude, accuracy } = position.coords;
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      throw new Error('The device returned an invalid GPS position.');
+    }
     const payload = {
       drvid: user.drvid,
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude,
+      latitude,
+      longitude,
+      gpssts: gpsStatus,
+      accuracy: Number.isFinite(accuracy) ? accuracy : undefined,
+      capturedAt: new Date(position.timestamp || Date.now()).toISOString(),
     };
+    // Keep only the newest unsent point so a temporary connection failure can
+    // recover without replaying an old route or growing device storage.
+    localStorage.setItem(PENDING_LOCATION_KEY, JSON.stringify(payload));
     const response = await saveDriverGpsLocation(payload);
     if (response?.status !== 'success') {
       throw new Error(response?.error?.message || 'Unable to update GPS location.');
     }
+    localStorage.removeItem(PENDING_LOCATION_KEY);
     setCurrentPosition({
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude,
+      latitude,
+      longitude,
       gpssts: gpsStatus,
     });
   };
@@ -102,6 +127,32 @@ function TransportDashboard({ user }) {
     });
   };
 
+  const reacquirePosition = () => {
+    if (!gpsActiveRef.current || !navigator.geolocation) return;
+    setGpsBusy(true);
+    navigator.geolocation.getCurrentPosition(
+      handlePosition,
+      handlePositionError,
+      { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 },
+    );
+  };
+
+  useEffect(() => {
+    const resumeTracking = () => {
+      if (!gpsActiveRef.current || document.visibilityState === 'hidden') return;
+      requestWakeLock();
+      reacquirePosition();
+    };
+    document.addEventListener('visibilitychange', resumeTracking);
+    window.addEventListener('pageshow', resumeTracking);
+    window.addEventListener('online', resumeTracking);
+    return () => {
+      document.removeEventListener('visibilitychange', resumeTracking);
+      window.removeEventListener('pageshow', resumeTracking);
+      window.removeEventListener('online', resumeTracking);
+    };
+  });
+
   const turnGpsOn = () => {
     if (!user.drvid) {
       setGpsMessage({ variant: 'danger', text: 'Driver ID is not assigned.' });
@@ -112,6 +163,7 @@ function TransportDashboard({ user }) {
       return;
     }
     setGpsBusy(true);
+    localStorage.setItem(ACTIVE_TRACKING_KEY, String(user.drvid));
     gpsActiveRef.current = true;
     setGpsEnabled(true);
     setGpsMessage(null);
@@ -125,6 +177,7 @@ function TransportDashboard({ user }) {
       { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
     );
     gpsIntervalRef.current = setInterval(publishLatestPosition, 3000);
+    requestWakeLock();
   };
 
   const turnGpsOff = () => {
@@ -136,10 +189,22 @@ function TransportDashboard({ user }) {
     latestPositionRef.current = null;
     requestInFlightRef.current = false;
     gpsActiveRef.current = false;
+    localStorage.removeItem(ACTIVE_TRACKING_KEY);
+    wakeLockRef.current?.release().catch(() => {});
+    wakeLockRef.current = null;
     setGpsEnabled(false);
     setGpsMessage({ variant: 'secondary', text: 'GPS tracking is off.' });
     if (lastPosition) sendPosition(lastPosition, 0).catch(() => {});
   };
+
+  useEffect(() => {
+    if (!user.drvid || localStorage.getItem(ACTIVE_TRACKING_KEY) !== String(user.drvid)) return;
+    // A page reload or reopened installed PWA should continue a session that
+    // the driver explicitly started and never stopped.
+    turnGpsOn();
+    // This intentionally runs only when the logged-in driver changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user.drvid]);
 
   return (
     <div className="dashboard-content transport-dashboard">
