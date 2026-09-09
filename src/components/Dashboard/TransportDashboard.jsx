@@ -26,7 +26,7 @@ function TransportDashboard({ user }) {
     if (gpsIntervalRef.current !== null) clearInterval(gpsIntervalRef.current);
   }, []);
 
-  const sendPosition = async (position) => {
+  const sendPosition = async (position, gpsStatus = 1) => {
     const payload = {
       drvid: user.drvid,
       latitude: position.coords.latitude,
@@ -39,6 +39,7 @@ function TransportDashboard({ user }) {
     setCurrentPosition({
       latitude: position.coords.latitude,
       longitude: position.coords.longitude,
+      gpssts: gpsStatus,
     });
   };
 
@@ -72,18 +73,33 @@ function TransportDashboard({ user }) {
     });
     setGpsBusy(false);
     setGpsMessage({ variant: 'success', text: 'GPS connected. Location is sent every 3 seconds.' });
+    // Do not wait for the first interval tick before publishing the location.
+    publishLatestPosition();
   };
 
   const handlePositionError = (error) => {
     requestInFlightRef.current = false;
     setGpsBusy(false);
-    setGpsEnabled(false);
-    gpsActiveRef.current = false;
-    if (gpsWatchRef.current !== null) navigator.geolocation.clearWatch(gpsWatchRef.current);
-    gpsWatchRef.current = null;
-    if (gpsIntervalRef.current !== null) clearInterval(gpsIntervalRef.current);
-    gpsIntervalRef.current = null;
-    setGpsMessage({ variant: 'danger', text: error.message || 'Location permission denied.' });
+    if (error.code === 1) {
+      setGpsEnabled(false);
+      gpsActiveRef.current = false;
+      if (gpsWatchRef.current !== null) navigator.geolocation.clearWatch(gpsWatchRef.current);
+      gpsWatchRef.current = null;
+      if (gpsIntervalRef.current !== null) clearInterval(gpsIntervalRef.current);
+      gpsIntervalRef.current = null;
+      setGpsMessage({ variant: 'danger', text: 'Location permission denied. Allow precise location and start tracking again.' });
+      return;
+    }
+
+    // Timeout and temporary position-unavailable errors are recoverable. Keep
+    // the watcher and publishing interval alive so GPS resumes automatically.
+    setGpsEnabled(true);
+    setGpsMessage({
+      variant: 'warning',
+      text: error.code === 3
+        ? 'Waiting for a fresh GPS signal. Tracking will retry automatically.'
+        : 'GPS signal is temporarily unavailable. Tracking is still running.',
+    });
   };
 
   const turnGpsOn = () => {
@@ -101,6 +117,8 @@ function TransportDashboard({ user }) {
     setGpsMessage(null);
     latestPositionRef.current = null;
     setCurrentPosition(null);
+    if (gpsWatchRef.current !== null) navigator.geolocation.clearWatch(gpsWatchRef.current);
+    if (gpsIntervalRef.current !== null) clearInterval(gpsIntervalRef.current);
     gpsWatchRef.current = navigator.geolocation.watchPosition(
       handlePosition,
       handlePositionError,
@@ -110,6 +128,7 @@ function TransportDashboard({ user }) {
   };
 
   const turnGpsOff = () => {
+    const lastPosition = latestPositionRef.current;
     if (gpsWatchRef.current !== null) navigator.geolocation.clearWatch(gpsWatchRef.current);
     gpsWatchRef.current = null;
     if (gpsIntervalRef.current !== null) clearInterval(gpsIntervalRef.current);
@@ -119,6 +138,7 @@ function TransportDashboard({ user }) {
     gpsActiveRef.current = false;
     setGpsEnabled(false);
     setGpsMessage({ variant: 'secondary', text: 'GPS tracking is off.' });
+    if (lastPosition) sendPosition(lastPosition, 0).catch(() => {});
   };
 
   return (
