@@ -80,6 +80,7 @@ function Login() {
       const sessions = Array.isArray(res.payload) ? res.payload : [res.payload];
       const validSessions = sessions.filter(Boolean);
       const userData = validSessions[0];
+      const token = res.token || res.accessToken || userData?.token || userData?.accessToken || '';
       dispatchAuth({
         type: 'LOGIN',
         payload: {
@@ -88,6 +89,8 @@ function Login() {
             validSessions.length > 1 && validSessions.every((item) => String(item.typ || '').toUpperCase() === 'STUDENT')
               ? validSessions
               : [],
+          token,
+          expiresAt: res.expiresAt || userData?.expiresAt,
         },
       });
       enablePushNotifications(userData).catch(() => {});

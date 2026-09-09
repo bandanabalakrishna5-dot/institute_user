@@ -5,7 +5,7 @@
  * @date   : Aug-2026
  */
 
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FaSignOutAlt,
@@ -35,6 +35,7 @@ import {
 import {
   fetchHomeworkNotifications,
   fetchInstituteNotificationCount,
+  fetchUserNotifications,
 } from '../../services/NotificationServices/notificationServices';
 import {
   disablePushNotifications,
@@ -113,9 +114,11 @@ function Topbar() {
   const [showProfileDrawer, setShowProfileDrawer] = useState(false);
   const [avatarImageFailed, setAvatarImageFailed] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [notificationPopup, setNotificationPopup] = useState(null);
   const latestNotificationIdRef = useRef(null);
   const latestHomeworkNotificationIdRef = useRef(null);
   const pushRegistrationAttemptedRef = useRef(false);
+  const notificationPopupTimerRef = useRef(null);
   const drawerRef = useRef(null);
   const navigate  = useNavigate();
 
@@ -128,6 +131,17 @@ function Topbar() {
   const cds         = user.cds || '';
   const instituteName = user.instnm || 'Institute';
   const branchName = user.brcnm || user.brnchnm || user.branchName || user.bracnm || 'Branch';
+
+  const showNotificationPopup = useCallback((item) => {
+    window.clearTimeout(notificationPopupTimerRef.current);
+    setNotificationPopup({
+      heading: item?.hdng || 'New notification',
+      description: item?.desc || 'You have received a new update.',
+    });
+    notificationPopupTimerRef.current = window.setTimeout(() => setNotificationPopup(null), 6000);
+  }, []);
+
+  useEffect(() => () => window.clearTimeout(notificationPopupTimerRef.current), []);
   const profileImageUrl = ['STAFF', 'STUDENT'].includes(typ)
     ? String(user.pturl || '').trim()
     : '';
@@ -182,11 +196,12 @@ function Topbar() {
           typ,
           ...(typ === 'STUDENT' && user.clsnm ? { clsnm: user.clsnm } : {}),
         };
-        const [response, homeworkResponse] = await Promise.all([
+        const [response, homeworkResponse, messageResponse] = await Promise.all([
           fetchInstituteNotificationCount(notificationParams),
           typ === 'STUDENT' && user.stdid
             ? fetchHomeworkNotifications(user.stdid, notificationParams).catch(() => null)
             : Promise.resolve(null),
+          fetchUserNotifications(notificationParams).catch(() => null),
         ]);
         const count = typ === 'STAFF'
           ? response?.payload?.staffCount
@@ -204,12 +219,17 @@ function Topbar() {
           const lastSeenHomeworkNotificationId = Number(localStorage.getItem(homeworkNotificationSeenKey)) || 0;
           if (latestNotificationIdRef.current !== null && latestNotificationId > latestNotificationIdRef.current) {
             playNotificationSound();
+            const messages = Array.isArray(messageResponse?.payload) ? messageResponse.payload : [];
+            showNotificationPopup(messages.find((item) => Number(item.ntfid) === latestNotificationId));
           }
           if (
             latestHomeworkNotificationIdRef.current !== null
             && latestHomeworkNotificationId > latestHomeworkNotificationIdRef.current
           ) {
             playNotificationSound();
+            showNotificationPopup(
+              homeworkNotifications.find((item) => Number(item.ntfid) === latestHomeworkNotificationId)
+            );
           }
           latestNotificationIdRef.current = latestNotificationId;
           latestHomeworkNotificationIdRef.current = latestHomeworkNotificationId;
@@ -229,7 +249,7 @@ function Topbar() {
       active = false;
       window.clearInterval(notificationPoll);
     };
-  }, [homeworkNotificationSeenKey, notificationSeenKey, typ, user.acdmcyr, user.brcid, user.clsnm, user.instid, user.stdid, user.usrid]);
+  }, [homeworkNotificationSeenKey, notificationSeenKey, showNotificationPopup, typ, user.acdmcyr, user.brcid, user.clsnm, user.instid, user.stdid, user.usrid]);
 
   const openNotifications = async () => {
     if (['STAFF', 'STUDENT'].includes(typ)) {
@@ -298,6 +318,19 @@ function Topbar() {
 
   return (
     <div className="user-topbar" style={{ justifyContent: 'space-between' }}>
+      {notificationPopup && (
+        <div className="notification-arrival-popup" role="status" onClick={openNotifications}>
+          <span><FaBell /></span>
+          <div>
+            <strong>{notificationPopup.heading}</strong>
+            <small>{notificationPopup.description}</small>
+          </div>
+          <button type="button" aria-label="Dismiss notification" onClick={(event) => {
+            event.stopPropagation();
+            setNotificationPopup(null);
+          }}><FaTimes /></button>
+        </div>
+      )}
       {/* Left: Logo / Home */}
       <button
         onClick={() => navigate('/dashboard')}

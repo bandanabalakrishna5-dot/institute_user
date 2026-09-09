@@ -169,6 +169,13 @@ a {
 .notification-bell-btn { color: #111827; }
 .notification-bell-btn:hover { color: #000; }
 .topbar-notification-count { position: absolute; top: -4px; right: -5px; min-width: 16px; height: 16px; padding: 0 4px; border: 2px solid #fff; border-radius: 999px; background: #ef4444; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: .5rem; line-height: 1; font-weight: 900; }
+.notification-arrival-popup { position: fixed; z-index: 1200; top: 70px; right: 14px; width: min(330px, calc(100vw - 28px)); padding: 11px; border: 1px solid #ddd6fe; border-radius: 14px; background: #fff; box-shadow: 0 16px 38px rgba(15,23,42,.2); display: grid; grid-template-columns: 34px minmax(0,1fr) 26px; align-items: center; gap: 9px; cursor: pointer; animation: notification-popup-in .22s ease-out; }
+.notification-arrival-popup > span { width: 34px; height: 34px; border-radius: 10px; background: #ede9fe; color: #7c3aed; display: grid; place-items: center; }
+.notification-arrival-popup > div { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.notification-arrival-popup strong { overflow: hidden; color: #0f172a; font-size: .82rem; text-overflow: ellipsis; white-space: nowrap; }
+.notification-arrival-popup small { overflow: hidden; color: #64748b; font-size: .7rem; text-overflow: ellipsis; white-space: nowrap; }
+.notification-arrival-popup button { width: 26px; height: 26px; padding: 0; border: 0; border-radius: 8px; background: #f8fafc; color: #64748b; display: grid; place-items: center; font-size: .68rem; }
+@keyframes notification-popup-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
 
 .user-profile-trigger {
   display: flex;
@@ -2247,21 +2254,21 @@ textarea.form-control {
   .tt-topic-panel { margin-top: 12px; padding: 12px; border-radius: 14px; }
 }
 /* Shared staff/student notifications */
-.notifications-page { padding: 14px; max-width: 860px; margin: 0 auto; }
-.notifications-hero { display: flex; gap: 14px; align-items: flex-start; padding: 20px; margin-bottom: 16px; border-radius: 24px; background: linear-gradient(135deg, #f5f3ff, #eff6ff); border: 1px solid #e2e8f0; }
-.notifications-back { width: 40px; height: 40px; flex: 0 0 40px; border: 1px solid #dbeafe; border-radius: 13px; background: #fff; color: #2563eb; display: grid; place-items: center; }
-.notifications-hero span { color: #6366f1; font-size: .7rem; font-weight: 900; letter-spacing: .05em; }
-.notifications-hero h1 { margin: 4px 0; color: #0f172a; font-size: 1.55rem; font-weight: 900; }
-.notifications-hero p { margin: 0; color: #64748b; font-size: .9rem; }
-.notifications-list { display: grid; gap: 11px; }
-.notification-card { display: flex; gap: 12px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 18px; background: #fff; box-shadow: 0 8px 24px rgba(15, 23, 42, .05); }
-.notification-card-icon { width: 39px; height: 39px; flex: 0 0 39px; border-radius: 12px; background: #ede9fe; color: #7c3aed; display: grid; place-items: center; }
+.notifications-page { padding: 10px; max-width: 860px; margin: 0 auto; }
+.notifications-hero { display: flex; gap: 10px; align-items: flex-start; padding: 13px; margin-bottom: 12px; border-radius: 18px; background: linear-gradient(135deg, #f5f3ff, #eff6ff); border: 1px solid #e2e8f0; }
+.notifications-back { width: 34px; height: 34px; flex: 0 0 34px; border: 1px solid #dbeafe; border-radius: 11px; background: #fff; color: #2563eb; display: grid; place-items: center; }
+.notifications-hero span { color: #6366f1; font-size: .63rem; font-weight: 900; letter-spacing: .05em; }
+.notifications-hero h1 { margin: 2px 0; color: #0f172a; font-size: 1.25rem; font-weight: 900; }
+.notifications-hero p { margin: 0; color: #64748b; font-size: .78rem; }
+.notifications-list { display: grid; gap: 8px; }
+.notification-card { display: flex; gap: 9px; padding: 11px; border: 1px solid #e2e8f0; border-radius: 15px; background: #fff; box-shadow: 0 6px 18px rgba(15, 23, 42, .05); }
+.notification-card-icon { width: 34px; height: 34px; flex: 0 0 34px; border-radius: 10px; background: #ede9fe; color: #7c3aed; display: grid; place-items: center; font-size: .85rem; }
 .notification-card-copy { min-width: 0; flex: 1; }
 .notification-card-heading { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
-.notification-card h2 { margin: 0; color: #0f172a; font-size: .98rem; font-weight: 800; }
-.notification-card time { white-space: nowrap; color: #64748b; font-size: .7rem; display: flex; align-items: center; gap: 4px; }
-.notification-card p { margin: 7px 0 5px; color: #475569; font-size: .84rem; line-height: 1.5; }
-.notification-card small { color: #94a3b8; font-size: .7rem; }
+.notification-card h2 { margin: 0; color: #0f172a; font-size: .88rem; font-weight: 800; }
+.notification-card time { white-space: nowrap; color: #64748b; font-size: .64rem; display: flex; align-items: center; gap: 3px; }
+.notification-card p { margin: 5px 0 3px; color: #475569; font-size: .76rem; line-height: 1.4; }
+.notification-card small { color: #94a3b8; font-size: .64rem; }
 .notifications-state { min-height: 220px; display: flex; align-items: center; justify-content: center; gap: 9px; padding: 24px; border: 1px dashed #cbd5e1; border-radius: 20px; background: #fff; color: #64748b; }
 .notifications-empty { flex-direction: column; text-align: center; }
 .notifications-empty > svg { font-size: 1.7rem; color: #94a3b8; }
@@ -2324,10 +2331,10 @@ textarea.form-control {
   .homework-verify-student { grid-template-columns: 36px minmax(0,1fr); }
 }
 @media (max-width: 480px) {
-  .notifications-page { padding: 12px; }
-  .notifications-hero { padding: 15px; border-radius: 19px; }
-  .notifications-hero h1 { font-size: 1.25rem; }
-  .notification-card { padding: 13px; }
+  .notifications-page { padding: 9px; }
+  .notifications-hero { padding: 12px; border-radius: 17px; }
+  .notifications-hero h1 { font-size: 1.15rem; }
+  .notification-card { padding: 10px; }
   .notification-card-heading { display: block; }
   .notification-card time { margin-top: 4px; }
 }

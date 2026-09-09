@@ -1,4 +1,22 @@
 import axios from 'axios';
+import { getSessionToken, invalidateAuthSession, loadAuthSession } from '../Authentication/authSession';
+
+axios.interceptors.request.use((config) => {
+  const token = getSessionToken(loadAuthSession());
+  if (token && !config.headers.Authorization && !config.headers['x-access-token']) {
+    config.headers.Authorization = `Bearer ${token}`;
+    config.headers['x-access-token'] = token;
+  }
+  return config;
+});
+
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error?.response?.status === 401) invalidateAuthSession();
+    return Promise.reject(error);
+  }
+);
 
 export const apiPostHelper = async (URL, PAYLOAD, HEADERS) => {
   try {
