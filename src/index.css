@@ -55,8 +55,9 @@ a {
 /* ── User Portal Layout ── */
 .user-portal-layout {
   display: flex;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 .user-portal-main {
@@ -64,7 +65,9 @@ a {
   display: flex;
   flex-direction: column;
   min-width: 0;
-  min-height: 100dvh;
+  min-height: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
 .user-portal-content {
@@ -73,7 +76,12 @@ a {
   padding: 0;
   /* room for fixed bottom nav */
   padding-bottom: 84px;
-  overflow: visible;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
 }
 
 .app-update-snackbar {
