@@ -2,19 +2,37 @@ import React from 'react';
 import { AppRouters } from './constants/router/AppRouters';
 import { ThemeProvider } from './context/ThemeContext';
 import AppUpdateSnackbar from './components/common/AppUpdateSnackbar';
-import {
-  clearStoredAuthentication,
-  restoreAuthentication,
-  saveAuthentication,
-} from './services/Authentication/sessionStorage';
+import secureLocalStorage from 'react-secure-storage';
 export const AuthContext = React.createContext();
 
-const initialStateAuth = restoreAuthentication();
+const USER_STORAGE_KEY = 'institute-user-session';
+const PROFILES_STORAGE_KEY = 'institute-student-profiles';
+
+const clearStoredAuthentication = () => {
+  try {
+    secureLocalStorage.removeItem('user');
+    secureLocalStorage.removeItem('studentProfiles');
+  } catch (error) {
+    // Continue clearing the standard storage if secure storage is unavailable.
+  }
+  localStorage.removeItem(USER_STORAGE_KEY);
+  localStorage.removeItem(PROFILES_STORAGE_KEY);
+};
+
+const getInitialState = () => {
+  clearStoredAuthentication();
+  return {
+    isAuthenticated: false,
+    user: {},
+    studentProfiles: [],
+  };
+};
+
+const initialStateAuth = getInitialState();
 
 const reducerAuth = (state, action) => {
   switch (action.type) {
     case 'LOGIN':
-      saveAuthentication(action.payload.user, action.payload.studentProfiles || []);
       return {
         ...state,
         isAuthenticated: true,
@@ -22,14 +40,17 @@ const reducerAuth = (state, action) => {
         studentProfiles: action.payload.studentProfiles || [],
       };
     case 'SELECT_STUDENT':
-      saveAuthentication(action.payload.user, state.studentProfiles || []);
       return {
         ...state,
         isAuthenticated: true,
         user: action.payload.user,
       };
     case 'LOGOUT':
-      clearStoredAuthentication();
+      secureLocalStorage.removeItem('user');
+      secureLocalStorage.clear();
+      localStorage.removeItem(USER_STORAGE_KEY);
+      localStorage.removeItem(PROFILES_STORAGE_KEY);
+      localStorage.clear();
       return {
         ...state,
         isAuthenticated: false,
@@ -46,12 +67,6 @@ function App() {
     reducerAuth,
     initialStateAuth
   );
-
-  React.useEffect(() => {
-    const invalidateSession = () => dispatchAuth({ type: 'LOGOUT' });
-    window.addEventListener('institute-auth-invalid', invalidateSession);
-    return () => window.removeEventListener('institute-auth-invalid', invalidateSession);
-  }, []);
 
   return (
     <ThemeProvider>
