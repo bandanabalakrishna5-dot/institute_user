@@ -37,10 +37,6 @@ import {
   fetchInstituteNotificationCount,
   fetchUserNotifications,
 } from '../../services/NotificationServices/notificationServices';
-import {
-  disablePushNotifications,
-  enablePushNotifications,
-} from '../../services/NotificationServices/pushNotificationServices';
 
 let notificationAudioContext;
 
@@ -117,7 +113,6 @@ function Topbar() {
   const [notificationPopup, setNotificationPopup] = useState(null);
   const latestNotificationIdRef = useRef(null);
   const latestHomeworkNotificationIdRef = useRef(null);
-  const pushRegistrationAttemptedRef = useRef(false);
   const notificationPopupTimerRef = useRef(null);
   const drawerRef = useRef(null);
   const navigate  = useNavigate();
@@ -164,24 +159,6 @@ function Topbar() {
       window.removeEventListener('keydown', unlockNotificationAudio);
     };
   }, []);
-
-  useEffect(() => {
-    if (pushRegistrationAttemptedRef.current
-      || !user.usrid
-      || !['STAFF', 'STUDENT'].includes(typ)
-      || !('Notification' in window)
-      || Notification.permission === 'denied') return;
-    pushRegistrationAttemptedRef.current = true;
-    enablePushNotifications({
-      usrid: user.usrid,
-      typ: user.typ,
-      instid: user.instid,
-      brcid: user.brcid,
-      clsnm: user.clsnm,
-    }).catch((error) => {
-      console.error('Unable to restore push notifications:', error);
-    });
-  }, [typ, user.brcid, user.clsnm, user.instid, user.typ, user.usrid]);
 
   useEffect(() => {
     let active = true;
@@ -252,11 +229,6 @@ function Topbar() {
   }, [homeworkNotificationSeenKey, notificationSeenKey, showNotificationPopup, typ, user.acdmcyr, user.brcid, user.clsnm, user.instid, user.stdid, user.usrid]);
 
   const openNotifications = async () => {
-    if (['STAFF', 'STUDENT'].includes(typ)) {
-      enablePushNotifications(user).catch((error) => {
-        console.error('Unable to enable push notifications:', error);
-      });
-    }
     if (latestNotificationIdRef.current) {
       localStorage.setItem(notificationSeenKey, String(latestNotificationIdRef.current));
     }
@@ -292,11 +264,6 @@ function Topbar() {
     dispatchAuth({ type: 'LOGOUT' });
     navigate('/', { replace: true });
 
-    // Push cleanup is best-effort and must never block signing out. In some
-    // WebViews navigator.serviceWorker.ready can remain pending indefinitely.
-    disablePushNotifications().catch((error) => {
-      console.error('Unable to disable push notifications:', error);
-    });
   };
 
   const goTo = (path) => {

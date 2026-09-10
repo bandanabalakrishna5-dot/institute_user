@@ -84,31 +84,19 @@ a {
   scroll-behavior: smooth;
 }
 
-.app-update-snackbar {
-  position: fixed;
-  z-index: 1100;
-  left: 50%;
-  bottom: calc(78px + env(safe-area-inset-bottom));
-  width: min(calc(100% - 24px), 520px);
-  transform: translateX(-50%);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background: #172554;
-  color: #fff;
-  box-shadow: 0 12px 30px rgba(15, 23, 42, .28);
-  font-size: .86rem;
-  font-weight: 700;
-}
-.app-update-snackbar button { border: 0; border-radius: 8px; padding: 7px 12px; background: #fff; color: #3158d8; font-weight: 850; }
 .global-success-toast { position: fixed; z-index: 2000; top: 18px; left: 50%; width: min(430px,calc(100vw - 28px)); min-height: 52px; padding: 12px 12px 12px 16px; border: 1px solid #86efac; border-radius: 14px; color: #166534; background: #f0fdf4; display: grid; grid-template-columns: auto minmax(0,1fr) auto; align-items: center; gap: 10px; box-shadow: 0 14px 34px rgba(15,23,42,.18); transform: translateX(-50%); animation: global-success-in .2s ease-out; }
 .global-success-toast > svg { color: #22c55e; font-size: 1.15rem; }
 .global-success-toast span { font-size: .86rem; font-weight: 750; }
 .global-success-toast button { width: 30px; height: 30px; padding: 0; border: 0; border-radius: 8px; color: #64748b; background: transparent; display: grid; place-items: center; }
 @keyframes global-success-in { from { opacity: 0; transform: translate(-50%,-10px); } to { opacity: 1; transform: translate(-50%,0); } }
+.privacy-policy-page { min-height: 100dvh; padding: 18px; background: #f1f5f9; }
+.privacy-policy-card { width: min(760px,100%); margin: 0 auto; padding: 22px; border: 1px solid #dbe3ef; border-radius: 20px; background: #fff; box-shadow: 0 12px 30px rgba(15,23,42,.08); }
+.privacy-policy-card header { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.privacy-policy-card header button { width: 40px; height: 40px; border: 0; border-radius: 11px; color: #315bea; background: #eef2ff; display: grid; place-items: center; }
+.privacy-policy-card header > span { width: 44px; height: 44px; border-radius: 12px; color: #fff; background: linear-gradient(135deg,#315bea,#7c3aed); display: grid; place-items: center; }
+.privacy-policy-card h1 { margin: 1px 0 0; color: #172033; font-size: 1.45rem; }.privacy-policy-card header small { color: #6366f1; font-weight: 850; }
+.privacy-policy-card h2 { margin: 20px 0 7px; color: #24324a; font-size: 1rem; }.privacy-policy-card p { margin: 0; color: #5f6f85; font-size: .86rem; line-height: 1.65; }.privacy-policy-card .privacy-policy-updated { color: #94a3b8; font-size: .75rem; }
+.login-footer-band button { margin-left: auto; padding: 3px 5px; border: 0; color: inherit; background: transparent; font-size: .68rem; text-decoration: underline; }
 
 /* ── User Topbar ── */
 .user-topbar {

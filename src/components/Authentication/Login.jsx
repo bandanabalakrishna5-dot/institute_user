@@ -6,8 +6,6 @@ import { FaEye, FaEyeSlash, FaLock, FaUserAlt, FaStar, FaGraduationCap, FaBookOp
 import { BsShield } from 'react-icons/bs';
 import { emailValidation } from '../../services/commonUtills/FormValidations';
 import { AuthContext } from '../../App';
-import InstallAppButton from '../common/InstallAppButton';
-import { enablePushNotifications } from '../../services/NotificationServices/pushNotificationServices';
 
 const initialState = {
   emlid: '',
@@ -93,7 +91,6 @@ function Login() {
           expiresAt: res.expiresAt || userData?.expiresAt,
         },
       });
-      enablePushNotifications(userData).catch(() => {});
       navigate(validSessions.length > 1 ? '/select-student' : '/dashboard');
     } else {
       setAlertShow(true);
@@ -895,8 +892,6 @@ function Login() {
                 <span className="login-action-arrow">→</span>
               </button>
 
-              <InstallAppButton />
-
               {/* <div className="login-divider"><span>OR</span></div> */}
 
               {/* <button className="login-admin-btn">
@@ -908,6 +903,7 @@ function Login() {
             <div className="login-footer-band">
               <span className="shield">♢</span>
               <span>Secure | Reliable | Smart School Management</span>
+              <button type="button" onClick={() => navigate('/privacy-policy')}>Privacy Policy</button>
             </div>
           </div>
         </div>

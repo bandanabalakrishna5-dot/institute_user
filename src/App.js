@@ -1,7 +1,6 @@
 import React from 'react';
 import { AppRouters } from './constants/router/AppRouters';
 import { ThemeProvider } from './context/ThemeContext';
-import AppUpdateSnackbar from './components/common/AppUpdateSnackbar';
 import GlobalSuccessToast from './components/common/GlobalSuccessToast';
 import { AUTH_INVALID_EVENT, clearAuthSession, getSessionExpiration, loadAuthSession, saveAuthSession } from './services/Authentication/authSession';
 export const AuthContext = React.createContext();
@@ -83,7 +82,6 @@ function App() {
     <ThemeProvider>
       <AuthContext.Provider value={{ stateAuth, dispatchAuth }}>
         <AppRouters />
-        <AppUpdateSnackbar />
         <GlobalSuccessToast />
       </AuthContext.Provider>
     </ThemeProvider>

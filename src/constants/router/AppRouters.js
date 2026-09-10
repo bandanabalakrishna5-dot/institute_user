@@ -20,6 +20,7 @@ import StudentBusTrackingPage from '../../components/Transport/StudentBusTrackin
 import HolidaysPage from '../../components/Holidays/HolidaysPage';
 import NotesPage from '../../components/Notes/NotesPage';
 import ChangePasswordPage from '../../components/Authentication/ChangePasswordPage';
+import PrivacyPolicyPage from '../../components/Privacy/PrivacyPolicyPage';
 import { ClassesPlaceholder, StudentsPlaceholder } from '../../components/Placeholder/index';
 import { USER_PORTAL_PERMISSIONS } from '../../services/commonUtills/FormValidations';
 
@@ -28,6 +29,7 @@ export const AppRouters = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="/select-student" element={<StudentProfileSelector />} />
         <Route
           path="/dashboard"
