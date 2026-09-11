@@ -687,14 +687,14 @@ function Login() {
               justify-content: center;
               min-height: 100vh;
               min-height: 100dvh;
-              padding: max(20px, env(safe-area-inset-top)) 16px max(20px, env(safe-area-inset-bottom));
+              padding: max(12px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom));
             }
             .login-auth-shell {
               width: 100%;
               max-width: 440px;
               min-height: auto;
               margin: 0;
-              padding: 32px 24px 26px;
+              padding: 22px 20px 20px;
               border-radius: 20px;
               box-shadow: 0 14px 40px rgba(63, 91, 151, 0.14);
             }
@@ -708,17 +708,17 @@ function Login() {
               margin-bottom: 18px;
             }
             .login-logo-core {
-              width: 104px;
-              height: 104px;
+              width: 84px;
+              height: 84px;
             }
-            .crest-container { transform: scale(0.82); }
-            .login-welcome { margin-bottom: 28px; }
+            .crest-container { transform: scale(0.68); }
+            .login-welcome { margin-bottom: 18px; }
             .login-welcome h1 {
-              font-size: clamp(30px, 10vw, 40px);
+              font-size: clamp(26px, 8vw, 32px);
               line-height: 1.05;
             }
-            .login-welcome p { font-size: clamp(16px, 4.8vw, 20px); }
-            .login-form-wrap { gap: 14px; }
+            .login-welcome p { font-size: clamp(14px, 4vw, 17px); }
+            .login-form-wrap { gap: 11px; }
             .login-input-group .login-input-icon {
               width: 44px;
               flex: 0 0 44px;
@@ -739,11 +739,11 @@ function Login() {
               white-space: nowrap;
             }
             .login-btn-primary {
-              min-height: 50px;
-              padding: 0.75rem 1.25rem;
+              min-height: 44px;
+              padding: 0.65rem 1.1rem;
             }
             .login-footer-band {
-              margin-top: 34px;
+              margin-top: 22px;
               gap: 8px;
               font-size: 11px;
               text-align: center;

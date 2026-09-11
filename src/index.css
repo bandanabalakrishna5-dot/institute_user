@@ -75,7 +75,7 @@ a {
   min-height: 0;
   padding: 0;
   /* room for fixed bottom nav */
-  padding-bottom: 84px;
+  padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior-y: contain;
@@ -100,14 +100,14 @@ a {
 
 /* ── User Topbar ── */
 .user-topbar {
-  height: 68px;
+  height: calc(68px + env(safe-area-inset-top, 0px));
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  padding: 0 clamp(16px, 4vw, 44px);
+  padding: env(safe-area-inset-top, 0px) clamp(16px, 4vw, 44px) 0;
   position: sticky;
   top: 0;
   z-index: 900;
@@ -573,7 +573,8 @@ a {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 64px;
+  height: calc(64px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
   background: #ffffff;
   border-top: 1px solid #e2e8f0;
   display: flex;
@@ -2138,26 +2139,29 @@ textarea.form-control {
 
 /* Compact student/staff portal sizing on mobile and tablet. */
 @media (max-width: 768px) {
-  .user-topbar { height: 58px; padding-inline: 14px; }
+  .user-topbar {
+    height: calc(58px + env(safe-area-inset-top, 0px));
+    padding: env(safe-area-inset-top, 0px) 14px 0;
+  }
   .user-topbar-identity { min-width: 0; max-width: calc(100% - 92px); }
   .user-topbar-school-copy { max-width: min(58vw, 230px); }
   .user-profile-avatar { width: 34px; height: 34px; font-size: 12px; }
   .user-profile-trigger { gap: 6px; padding: 3px 6px; }
-  .user-portal-content { padding-bottom: 68px; }
+  .user-portal-content { padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
   .user-portal-content > .container,
-  .user-portal-content > .container-fluid { padding-top: 14px !important; padding-bottom: 14px !important; }
+  .user-portal-content > .container-fluid { padding-top: 10px !important; padding-bottom: 10px !important; }
 
-  .dashboard-content .welcome-banner h2 { font-size: 1.35rem; }
-  .dashboard-content .welcome-banner p { font-size: .85rem; }
-  .staff-welcome-banner { margin-bottom: 18px; padding: 19px 17px; border-radius: 19px; }
+  .dashboard-content .welcome-banner h2 { font-size: 1.18rem; }
+  .dashboard-content .welcome-banner p { font-size: .76rem; }
+  .staff-welcome-banner { margin-bottom: 13px; padding: 14px 13px; border-radius: 16px; }
   .staff-welcome-banner p { margin-bottom: 0 !important; }
-  .feed-title { margin-bottom: 8px; font-size: .92rem; }
+  .feed-title { margin-bottom: 6px; font-size: .86rem; }
   .feed-card { border-radius: 12px; }
-  .feed-card .card-body { padding: 14px; font-size: .85rem; }
+  .feed-card .card-body { padding: 11px; font-size: .78rem; }
   .dashboard-explore { padding-bottom: 12px; }
-  .dashboard-explore-grid { gap: 9px; }
-  .dashboard-explore-item { min-height: 96px; padding: 10px 6px; border-radius: 14px; gap: 7px; font-size: .74rem; }
-  .dashboard-explore-icon { width: 44px; height: 44px; border-radius: 13px; font-size: 1.35rem; }
+  .dashboard-explore-grid { gap: 7px; }
+  .dashboard-explore-item { min-height: 82px; padding: 8px 5px; border-radius: 12px; gap: 5px; font-size: .68rem; }
+  .dashboard-explore-icon { width: 38px; height: 38px; border-radius: 11px; font-size: 1.15rem; }
 
   .hw-page,
   .leave-page,

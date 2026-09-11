@@ -37,33 +37,18 @@ import {
   fetchInstituteNotificationCount,
   fetchUserNotifications,
 } from '../../services/NotificationServices/notificationServices';
+import notificationSound from '../../assets/sounds/notification-water-droplet.mp3';
 
-let notificationAudioContext;
-
-const getNotificationAudioContext = () => {
-  const AudioContext = window.AudioContext || window.webkitAudioContext;
-  if (!AudioContext) return null;
-  if (!notificationAudioContext) notificationAudioContext = new AudioContext();
-  return notificationAudioContext;
-};
+let notificationAudio;
 
 const playNotificationSound = async () => {
   try {
-    const context = getNotificationAudioContext();
-    if (!context) return;
-    if (context.state === 'suspended') await context.resume();
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.connect(gain);
-    gain.connect(context.destination);
-    oscillator.type = 'sine';
-    oscillator.frequency.setValueAtTime(660, context.currentTime);
-    oscillator.frequency.setValueAtTime(880, context.currentTime + 0.12);
-    gain.gain.setValueAtTime(0.0001, context.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.18, context.currentTime + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.32);
-    oscillator.start(context.currentTime);
-    oscillator.stop(context.currentTime + 0.34);
+    if (!notificationAudio) {
+      notificationAudio = new Audio(notificationSound);
+      notificationAudio.preload = 'auto';
+    }
+    notificationAudio.currentTime = 0;
+    await notificationAudio.play();
   } catch (error) {
     // Audio can be blocked until the user interacts with the page.
   }
@@ -147,20 +132,7 @@ function Topbar() {
     setAvatarImageFailed(false);
   }, [profileImageUrl]);
 
-  useEffect(() => {
-    const unlockNotificationAudio = () => {
-      const context = getNotificationAudioContext();
-      if (context?.state === 'suspended') context.resume().catch(() => {});
-    };
-    window.addEventListener('pointerdown', unlockNotificationAudio, { once: true });
-    window.addEventListener('keydown', unlockNotificationAudio, { once: true });
-    return () => {
-      window.removeEventListener('pointerdown', unlockNotificationAudio);
-      window.removeEventListener('keydown', unlockNotificationAudio);
-    };
-  }, []);
-
-  useEffect(() => {
+useEffect(() => {
     let active = true;
     const loadNotificationCount = async () => {
       if (!user.usrid || !['STAFF', 'STUDENT'].includes(typ)) return;
