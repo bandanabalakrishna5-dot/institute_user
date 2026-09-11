@@ -70,11 +70,7 @@ function StudentDashboard({ user }) {
     hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.FEE_DETAILS) && {
       label: 'Fee Details', path: '/fee-details', icon: <FaFileInvoiceDollar />, color: 'orange',
     },
-    hasAnyPermission(cds, [
-      ...USER_PORTAL_PERMISSIONS.EXAMS,
-      ...USER_PORTAL_PERMISSIONS.RESULTS,
-      ...USER_PORTAL_PERMISSIONS.STUDENT_MARKS_ACCESS,
-    ]) && { label: 'Exam & Results', icon: <FaGraduationCap />, color: 'rose' },
+    { label: 'Exam Results', path: '/exam-results', icon: <FaGraduationCap />, color: 'rose' },
     hasAnyPermission(cds, USER_PORTAL_PERMISSIONS.STUDY_MATERIALS) && {
       label: 'Notes', path: '/notes', icon: <FaStickyNote />, color: 'indigo',
     },

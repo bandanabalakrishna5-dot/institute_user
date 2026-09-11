@@ -23,6 +23,7 @@ function Login() {
   const [showPassword, setShowPassword] = useState(true);
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [showPrivacyPolicy, setShowPrivacyPolicy] = useState(false);
   
   // Forgot Password Modal State
   const [showChangePwd, setShowChangePwd] = useState(false);
@@ -154,6 +155,20 @@ function Login() {
 
   return (
     <>
+      <Modal show={showPrivacyPolicy} onHide={() => setShowPrivacyPolicy(false)} centered scrollable className="login-privacy-modal" contentClassName="login-privacy-content">
+        <Modal.Header closeButton className="login-privacy-header"><Modal.Title>Privacy Policy</Modal.Title></Modal.Header>
+        <Modal.Body className="login-privacy-body">
+          <p className="login-privacy-updated">Last updated: 10 September 2026</p>
+          <h2>Information we process</h2><p>The app processes account and school information supplied by the institute, including names, contact details, attendance, homework, timetable, marks, fees, leave requests, notifications and uploaded study materials.</p>
+          <h2>Location information</h2><p>Precise device location is requested only for live bus tracking. A driver’s location is shared with assigned students while tracking is active. A student’s location is used on the device to display the route and distance to the bus.</p>
+          <h2>How information is used</h2><p>Information is used to authenticate users, provide institute services, maintain academic records, deliver notifications and operate live transport tracking. It is not used for advertising or sold to third parties.</p>
+          <h2>Sharing and security</h2><p>Information may be processed by infrastructure providers needed to operate the service. Network communication uses encryption in transit, and access is limited according to the user’s institute role.</p>
+          <h2>Retention and deletion</h2><p>Records are retained according to the institute’s administrative and legal requirements. Users or guardians may contact their institute administrator to request access, correction or deletion where applicable.</p>
+          <h2>Children and families</h2><p>This is a school-managed service. Student accounts and information are administered by the institute and, where applicable, used under the direction of a parent, guardian or authorized school representative.</p>
+          <h2>Contact</h2><p>For privacy questions or account-data requests, contact the institute administration shown in your account or school communications.</p>
+        </Modal.Body>
+        <Modal.Footer className="login-privacy-footer"><Button type="button" onClick={() => setShowPrivacyPolicy(false)}>Close</Button></Modal.Footer>
+      </Modal>
       <Modal
         show={showChangePwd}
         onHide={() => setShowChangePwd(false)}
@@ -290,6 +305,16 @@ function Login() {
             background: linear-gradient(135deg, #264bd0 0%, #2b1e7b 100%);
           }
           .login-change-password-submit:disabled { opacity: 0.72; }
+          .login-privacy-content { max-height: min(82dvh, 720px); overflow: hidden; border: 0; border-radius: 20px; box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28); }
+          .login-privacy-header { border-bottom: 1px solid #e2e8f0; }
+          .login-privacy-header .modal-title { color: #17224b; font-size: 1.2rem; font-weight: 850; }
+          .login-privacy-body { padding: 18px 20px; overscroll-behavior: contain; }
+          .login-privacy-body h2 { margin: 20px 0 6px; color: #24324a; font-size: .95rem; font-weight: 800; }
+          .login-privacy-body h2:first-of-type { margin-top: 12px; }
+          .login-privacy-body p { margin: 0; color: #5f6f85; font-size: .8rem; line-height: 1.65; }
+          .login-privacy-body .login-privacy-updated { color: #94a3b8; font-size: .72rem; }
+          .login-privacy-footer { border-top: 1px solid #e2e8f0; }
+          .login-privacy-footer .btn { min-width: 88px; border: 0; background: linear-gradient(135deg, #315bea, #34248b); }
           .login-container-new:before,
           .login-container-new:after {
             content: '';
@@ -903,7 +928,7 @@ function Login() {
             <div className="login-footer-band">
               <span className="shield">♢</span>
               <span>Secure | Reliable | Smart School Management</span>
-              <button type="button" onClick={() => navigate('/privacy-policy')}>Privacy Policy</button>
+              <button type="button" onClick={() => setShowPrivacyPolicy(true)}>Privacy Policy</button>
             </div>
           </div>
         </div>

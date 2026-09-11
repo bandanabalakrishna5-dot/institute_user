@@ -11,6 +11,14 @@ export const fetchExamTimeTableMarks = async (params) => {
   return response.data;
 };
 
+export const fetchStudentExamResults = async (params) => {
+  const response = await apiGetHelper(
+    `${API_URL}/student-marks/subject-wise-marks`,
+    { ...jsonHeaders, params }
+  );
+  return response.data;
+};
+
 export const createStudentMarks = async (payload) => {
   const response = await apiPostHelper(
     `${API_URL}/student-marks/create`,

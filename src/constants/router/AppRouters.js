@@ -14,6 +14,7 @@ import StaffLeavePage from '../../components/Leave/StaffLeavePage';
 import StudentLeavePage from '../../components/Leave/StudentLeavePage';
 import TimetablePage from '../../components/Timetable/TimetablePage';
 import StudentMarksPage from '../../components/StudentMarks/StudentMarksPage';
+import StudentResultsPage from '../../components/StudentResults/StudentResultsPage';
 import StudentFeeDetails from '../../components/FeeDetails/StudentFeeDetails';
 import NotificationsPage from '../../components/Notifications/NotificationsPage';
 import StudentBusTrackingPage from '../../components/Transport/StudentBusTrackingPage';
@@ -122,6 +123,14 @@ export const AppRouters = () => {
               userTypes={['STAFF']}
             >
               <StudentMarksPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/exam-results"
+          element={
+            <ProtectedRoute userTypes={['STUDENT']}>
+              <StudentResultsPage />
             </ProtectedRoute>
           }
         />
