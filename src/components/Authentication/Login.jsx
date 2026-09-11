@@ -210,8 +210,12 @@ function Login() {
         dismissible
         style={{
           position: 'fixed',
-          top: '20px',
-          right: '20px',
+          top: 'calc(env(safe-area-inset-top, 0px) + 12px)',
+          right: 'calc(env(safe-area-inset-right, 0px) + 12px)',
+          left: 'calc(env(safe-area-inset-left, 0px) + 12px)',
+          width: 'fit-content',
+          maxWidth: 'calc(100vw - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px) - 24px)',
+          marginLeft: 'auto',
           zIndex: 9999,
           boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
         }}

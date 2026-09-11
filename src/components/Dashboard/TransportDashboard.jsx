@@ -9,10 +9,14 @@ import {
   FaShieldAlt,
 } from 'react-icons/fa';
 import { saveDriverGpsLocation } from '../../services/TransportServices/transportServices';
+import { Capacitor, registerPlugin } from '@capacitor/core';
+import { getSessionToken, loadAuthSession } from '../../services/Authentication/authSession';
 import { getIndiaGreeting } from './dashboardGreeting';
 
 const ACTIVE_TRACKING_KEY = 'institute-driver-gps-active';
 const PENDING_LOCATION_KEY = 'institute-driver-gps-pending';
+const LOCATION_SEND_INTERVAL_MS = 8000;
+const BackgroundLocation = registerPlugin('BackgroundLocation');
 
 function TransportDashboard({ user }) {
   const gpsWatchRef = useRef(null);
@@ -78,7 +82,7 @@ function TransportDashboard({ user }) {
         setGpsEnabled(true);
         setGpsMessage({
           variant: 'success',
-          text: `Live location sent every 3 seconds: ${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`,
+          text: `Live location sent every 8 seconds: ${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`,
         });
       }
     } catch (error) {
@@ -97,7 +101,7 @@ function TransportDashboard({ user }) {
       longitude: position.coords.longitude,
     });
     setGpsBusy(false);
-    setGpsMessage({ variant: 'success', text: 'GPS connected. Location is sent every 3 seconds.' });
+    setGpsMessage({ variant: 'success', text: 'GPS connected. Location is sent every 8 seconds.' });
     // Do not wait for the first interval tick before publishing the location.
     publishLatestPosition();
   };
@@ -153,7 +157,7 @@ function TransportDashboard({ user }) {
     };
   });
 
-  const turnGpsOn = () => {
+  const turnGpsOn = async () => {
     if (!user.drvid) {
       setGpsMessage({ variant: 'danger', text: 'Driver ID is not assigned.' });
       return;
@@ -169,6 +173,27 @@ function TransportDashboard({ user }) {
     setGpsMessage(null);
     latestPositionRef.current = null;
     setCurrentPosition(null);
+    if (Capacitor.isNativePlatform()) {
+      try {
+        await BackgroundLocation.requestPermissions();
+        await BackgroundLocation.start({
+          driverId: Number(user.drvid),
+          apiUrl: `${process.env.REACT_APP_SCHOOL_BACKEND_URL}/transport-information/gps-location`,
+          token: getSessionToken(loadAuthSession()),
+          intervalMs: LOCATION_SEND_INTERVAL_MS,
+        });
+        setGpsBusy(false);
+        setGpsMessage({ variant: 'success', text: 'Background GPS active. Location is saved every 8 seconds, including while the screen is locked.' });
+        return;
+      } catch (error) {
+        gpsActiveRef.current = false;
+        setGpsEnabled(false);
+        setGpsBusy(false);
+        localStorage.removeItem(ACTIVE_TRACKING_KEY);
+        setGpsMessage({ variant: 'danger', text: error?.message || 'Unable to start background GPS.' });
+        return;
+      }
+    }
     if (gpsWatchRef.current !== null) navigator.geolocation.clearWatch(gpsWatchRef.current);
     if (gpsIntervalRef.current !== null) clearInterval(gpsIntervalRef.current);
     gpsWatchRef.current = navigator.geolocation.watchPosition(
@@ -176,11 +201,11 @@ function TransportDashboard({ user }) {
       handlePositionError,
       { enableHighAccuracy: true, maximumAge: 0, timeout: 15000 }
     );
-    gpsIntervalRef.current = setInterval(publishLatestPosition, 3000);
+    gpsIntervalRef.current = setInterval(publishLatestPosition, LOCATION_SEND_INTERVAL_MS);
     requestWakeLock();
   };
 
-  const turnGpsOff = () => {
+  const turnGpsOff = async () => {
     const lastPosition = latestPositionRef.current;
     if (gpsWatchRef.current !== null) navigator.geolocation.clearWatch(gpsWatchRef.current);
     gpsWatchRef.current = null;
@@ -194,6 +219,10 @@ function TransportDashboard({ user }) {
     wakeLockRef.current = null;
     setGpsEnabled(false);
     setGpsMessage({ variant: 'secondary', text: 'GPS tracking is off.' });
+    if (Capacitor.isNativePlatform()) {
+      await BackgroundLocation.stop().catch(() => {});
+      return;
+    }
     if (lastPosition) sendPosition(lastPosition, 0).catch(() => {});
   };
 

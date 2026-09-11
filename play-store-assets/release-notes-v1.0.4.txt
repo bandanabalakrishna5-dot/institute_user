@@ -1,0 +1,9 @@
+<en-US>
+What's new:
+- Added Exam Results for students with exam-wise subject marks and pass/fail status.
+- Fixed the installed app icon on Android phones.
+- Improved login, dashboard and profile layouts on smaller screens.
+- Added a scrollable Privacy Policy from the login page.
+- Improved lock-screen notifications and notification sound support.
+- General stability and user interface improvements.
+</en-US>

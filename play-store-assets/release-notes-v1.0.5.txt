@@ -1,0 +1,10 @@
+<en-US>
+What's new:
+- Live bus GPS now updates every 8 seconds.
+- Improved live tracking while the screen is locked or another app is open.
+- Added more reliable institute notifications outside the app and on the lock screen.
+- Improved layouts across small, medium and large Android phones.
+- Added better notch, status bar, navigation bar and keyboard handling.
+- Fixed text, card, form, dialog and bottom navigation overflow issues.
+- General stability improvements.
+</en-US>

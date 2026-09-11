@@ -5,7 +5,7 @@
  * @date   : Aug-2026
  */
 
-import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   FaSignOutAlt,
@@ -36,6 +36,7 @@ import {
   fetchHomeworkNotifications,
   fetchInstituteNotificationCount,
   fetchUserNotifications,
+  enablePushNotifications,
 } from '../../services/NotificationServices/notificationServices';
 import notificationSound from '../../assets/sounds/notification-water-droplet.mp3';
 
@@ -102,7 +103,7 @@ function Topbar() {
   const drawerRef = useRef(null);
   const navigate  = useNavigate();
 
-  const user        = stateAuth?.user || {};
+  const user        = useMemo(() => stateAuth?.user || {}, [stateAuth?.user]);
   const displayName = user.stdnm || user.stfnm || user.drvnm || 'User';
   const roleId      = user.stdrolid || user.stfrolid || user.drvid || '';
   const academicYear= user.acdmcyr || '';
@@ -200,7 +201,14 @@ useEffect(() => {
     };
   }, [homeworkNotificationSeenKey, notificationSeenKey, showNotificationPopup, typ, user.acdmcyr, user.brcid, user.clsnm, user.instid, user.stdid, user.usrid]);
 
+  useEffect(() => {
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      enablePushNotifications(user).catch(() => {});
+    }
+  }, [user]);
+
   const openNotifications = async () => {
+    await enablePushNotifications(user, true).catch(() => false);
     if (latestNotificationIdRef.current) {
       localStorage.setItem(notificationSeenKey, String(latestNotificationIdRef.current));
     }
